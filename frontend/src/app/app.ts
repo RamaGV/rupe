@@ -1,6 +1,5 @@
 // src/app/app.ts
-
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { Api } from './core/api';
 
@@ -12,14 +11,14 @@ import { Api } from './core/api';
   styleUrl: './app.css',
 })
 export class App implements OnInit {
-  healthStatus = 'verificando...';
+  healthStatus = signal('verificando...');  // ← Signal en lugar de string
 
-  private apiService = inject(Api);  // ← inject() en lugar de constructor
+  private apiService = inject(Api);
 
   ngOnInit(): void {
     this.apiService.get<{ status: string }>('health').subscribe({
-      next: (res) => (this.healthStatus = res.status),
-      error: () => (this.healthStatus = 'error conectando al backend'),
+      next: (res: { status: string }) => this.healthStatus.set(res.status),  // ← .set()
+      error: () => this.healthStatus.set('error conectando al backend'),
     });
   }
 }
