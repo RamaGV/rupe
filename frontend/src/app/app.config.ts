@@ -1,14 +1,17 @@
 // src/app/app.config.ts
 
 import { ApplicationConfig, provideZonelessChangeDetection } from '@angular/core';
-import { provideRouter } from '@angular/router';
+import { provideRouter, withComponentInputBinding } from '@angular/router';
 import { provideHttpClient } from '@angular/common/http';
 import { routes } from './app.routes';
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideZonelessChangeDetection(),
-    provideRouter(routes),
+    // withComponentInputBinding: los parámetros de ruta (ej :id) se
+    // enlazan automáticamente a los input() del componente — sin
+    // inyectar ActivatedRoute a mano.
+    provideRouter(routes, withComponentInputBinding()),
     provideHttpClient(),
   ],
 };

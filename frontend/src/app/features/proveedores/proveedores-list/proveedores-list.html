@@ -1,0 +1,89 @@
+<!-- src/app/features/proveedores/proveedores-list/proveedores-list.html -->
+<div class="p-8">
+  <div class="flex items-center justify-between mb-6 gap-4 flex-wrap">
+    <h1 class="text-2xl font-bold text-gray-800">
+      Proveedores registrados en RUPE
+      @if (pagina(); as p) {
+        <span class="text-sm font-normal text-gray-500">({{ p.total }} encontrados)</span>
+      }
+    </h1>
+    <input
+      type="search"
+      placeholder="Buscar por razón social o documento..."
+      class="border border-gray-300 rounded-lg px-4 py-2 text-sm w-80 focus:outline-none focus:ring-2 focus:ring-blue-300"
+      (input)="onBuscar($any($event.target).value)"
+    />
+  </div>
+
+  @if (error(); as err) {
+    <p class="text-red-600 bg-red-50 rounded-lg p-4 mb-4">{{ err }}</p>
+  }
+
+  @if (cargando()) {
+    <p class="text-gray-500">Cargando...</p>
+  } @else if (pagina(); as p) {
+    <div class="bg-white rounded-xl shadow overflow-hidden">
+      <table class="w-full text-sm text-left">
+        <thead class="bg-gray-100 text-gray-600 uppercase text-xs">
+          <tr>
+            <th class="px-4 py-3">Documento</th>
+            <th class="px-4 py-3">Razón Social</th>
+            <th class="px-4 py-3">Departamento</th>
+            <th class="px-4 py-3">Estado</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (proveedor of p.datos; track proveedor.numeroDocumento) {
+            <tr class="border-t border-gray-100 hover:bg-gray-50">
+              <td class="px-4 py-3 font-mono">{{ proveedor.numeroDocumento }}</td>
+              <td class="px-4 py-3">
+                <a [routerLink]="['/proveedores', proveedor.numeroDocumento]" class="text-blue-600 hover:underline">
+                  {{ proveedor.razonSocial }}
+                </a>
+              </td>
+              <td class="px-4 py-3">{{ proveedor.direccionFiscal?.departamento ?? '-' }}</td>
+              <td class="px-4 py-3">
+                <span
+                  class="px-2 py-1 rounded-full text-xs font-medium"
+                  [class]="proveedor.estado === 'ACTIVO'
+                    ? 'bg-green-100 text-green-700'
+                    : 'bg-gray-100 text-gray-600'"
+                >
+                  {{ proveedor.estado }}
+                </span>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="4" class="px-4 py-8 text-center text-gray-500">
+                Sin resultados para esa búsqueda
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+
+      <div class="flex items-center justify-between border-t border-gray-100 px-4 py-3">
+        <span class="text-sm text-gray-500">
+          Página {{ p.page }} de {{ p.totalPaginas }}
+        </span>
+        <div class="flex gap-2">
+          <button
+            (click)="anterior()"
+            [disabled]="p.page <= 1"
+            class="px-3 py-1 rounded-lg text-sm border border-gray-200 disabled:opacity-40 hover:bg-gray-50"
+          >
+            ← Anterior
+          </button>
+          <button
+            (click)="siguiente()"
+            [disabled]="p.page >= p.totalPaginas"
+            class="px-3 py-1 rounded-lg text-sm border border-gray-200 disabled:opacity-40 hover:bg-gray-50"
+          >
+            Siguiente →
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+</div>
