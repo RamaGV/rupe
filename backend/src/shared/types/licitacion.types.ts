@@ -16,7 +16,8 @@ export interface ItemLlamado {
   descripcion: string;
   cantidad: number;
   unidad: string;
-  moneda: Moneda;
+  precioUnitario?: number; // viene de OCDS (unit.value.amount); el RSS no lo trae
+  moneda?: Moneda; // opcional: los dumps OCDS traen items sin moneda
   familia?: FamiliaArticulo;
   caracteristicas?: Record<string, string>; // clave-valor libre según el artículo
 }
@@ -39,7 +40,7 @@ export interface Organismo {
 export interface Licitacion {
   // Identificación
   id: string;                          // ID interno del portal (ej: "1351898")
-  numeroCcompra: string;               // Número legible (ej: "774/2026")
+  numeroCompra: string;                // Número legible (ej: "774/2026")
   anio: number;
 
   // Clasificación

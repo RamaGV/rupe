@@ -21,6 +21,12 @@ export enum TipoContratacion {
   VENTA_LICITACION_PUBLICA = 'Venta/Arrendamiento Licitación Pública',
   VENTA_POR_EXCEPCION = 'Venta/Arrendamiento por Excepción',
   VENTA_POR_REMATE = 'Venta/Arrendamiento por Remate',
+  // Variantes PFI (financiamiento internacional) — aparecen en los dumps
+  // OCDS 2025 (107 llamados) y en el RSS con el prefijo "PFI - "
+  PFI_COMPARACION_PRECIOS = 'PFI - Comparación de precios',
+  PFI_CONTRATACION_DIRECTA = 'PFI - Contratación directa',
+  PFI_LICITACION_PUBLICA_NACIONAL = 'PFI - Licitación pública nacional',
+  PFI_LICITACION_PUBLICA_INTERNACIONAL = 'PFI - Licitación pública internacional',
 }
 
 // Estados de resolución reales del portal ARCE
@@ -74,8 +80,8 @@ export enum TipoDocumento {
 
 // Estado del proveedor en RUPE
 export enum EstadoProveedor {
-  ACTIVO = 'Activo',
-  SUSPENDIDO = 'Suspendido',
-  INHABILITADO = 'Inhabilitado',
-  EN_TRAMITE = 'En trámite',
+  ACTIVO = 'ACTIVO',
+  EN_INGRESO = 'EN INGRESO',
+  BAJA_DGI = 'BAJA DGI',
+  DESCONOCIDO = 'DESCONOCIDO',
 }
