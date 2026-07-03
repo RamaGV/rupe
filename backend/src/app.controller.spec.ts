@@ -1,3 +1,4 @@
+// backend/src/app.controller.spec.ts
 import { Test, TestingModule } from '@nestjs/testing';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -14,9 +15,15 @@ describe('AppController', () => {
     appController = app.get<AppController>(AppController);
   });
 
-  describe('root', () => {
-    it('should return "Hello World!"', () => {
-      expect(appController.getHello()).toBe('Hello World!');
+  describe('health', () => {
+    it('debe devolver status "ok"', () => {
+      const result = appController.getHealth();
+      expect(result.status).toBe('ok');
+    });
+
+    it('debe incluir un timestamp ISO válido', () => {
+      const result = appController.getHealth();
+      expect(new Date(result.timestamp).toString()).not.toBe('Invalid Date');
     });
   });
 });

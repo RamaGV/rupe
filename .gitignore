@@ -13,6 +13,9 @@ yarn-error.log*
 backend/dist/
 backend/.tsbuildinfo
 
+# ─── Datos crudos de ingesta (CSV de RUPE, dumps OCDS) ──────────────
+backend/data/
+
 # ─── Angular ────────────────────────────────────────────────────────
 frontend/dist/
 frontend/.angular/

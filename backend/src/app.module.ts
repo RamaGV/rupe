@@ -3,16 +3,19 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { DatabaseModule } from './database/database.module';
+import { LicitacionesModule } from './licitaciones/licitaciones.module';
+import { ProveedoresModule } from './proveedores/proveedores.module';
 
 @Module({
   imports: [
-    // ConfigModule.forRoot() lee el archivo .env y lo hace disponible
-    // en toda la app a través de ConfigService.
-    // isGlobal: true evita tener que importarlo en cada módulo.
     ConfigModule.forRoot({
       isGlobal: true,
-      envFilePath: '../.env', // el .env está en la raíz del monorepo
+      envFilePath: '../.env',
     }),
+    DatabaseModule,
+    ProveedoresModule, 
+    LicitacionesModule,
   ],
   controllers: [AppController],
   providers: [AppService],
