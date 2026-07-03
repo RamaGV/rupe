@@ -1,11 +1,56 @@
 <!-- src/app/features/licitaciones/licitaciones-list/licitaciones-list.html -->
 <div class="p-8">
-  <h1 class="text-2xl font-bold text-gray-800 mb-6">
-    Licitaciones vigentes
+  <h1 class="text-2xl font-bold text-gray-800 mb-4">
+    Licitaciones
     @if (pagina(); as p) {
-      <span class="text-sm font-normal text-gray-500">({{ p.total }} en total)</span>
+      <span class="text-sm font-normal text-gray-500">({{ p.total }} encontradas)</span>
     }
   </h1>
+
+  <!-- Barra de filtros: espejo del BuscarLicitacionesDto del backend -->
+  <div class="flex flex-wrap items-center gap-3 mb-6">
+    <input
+      type="search"
+      placeholder="Buscar en descripciones..."
+      class="border border-gray-300 rounded-lg px-4 py-2 text-sm w-72 focus:outline-none focus:ring-2 focus:ring-blue-300"
+      (input)="onBuscar($any($event.target).value)"
+    />
+    <select
+      class="border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white"
+      (change)="onFiltro('estado', $any($event.target).value)"
+    >
+      <option value="">Todos los estados</option>
+      @for (e of estados; track e) {
+        <option [value]="e">{{ e }}</option>
+      }
+    </select>
+    <select
+      class="border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white max-w-56"
+      (change)="onFiltro('tipo', $any($event.target).value)"
+    >
+      <option value="">Todos los tipos</option>
+      @for (t of tipos; track t) {
+        <option [value]="t">{{ t }}</option>
+      }
+    </select>
+    <select
+      class="border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white"
+      (change)="onFiltro('anio', $any($event.target).value)"
+    >
+      <option value="">Todos los años</option>
+      @for (a of anios; track a) {
+        <option [value]="a">{{ a }}</option>
+      }
+    </select>
+    <select
+      class="border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white"
+      (change)="onFiltro('orden', $any($event.target).value)"
+    >
+      @for (o of ordenes; track o.valor) {
+        <option [value]="o.valor">{{ o.etiqueta }}</option>
+      }
+    </select>
+  </div>
 
   @if (cargando()) {
     <p class="text-gray-500">Cargando...</p>

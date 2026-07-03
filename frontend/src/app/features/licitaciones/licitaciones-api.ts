@@ -69,12 +69,54 @@ export interface PaginaLicitaciones {
   totalPaginas: number;
 }
 
+// Espejo del BuscarLicitacionesDto del backend
+export interface FiltrosLicitaciones {
+  page?: number;
+  limit?: number;
+  texto?: string;
+  estado?: string;
+  tipo?: string;
+  anio?: number;
+  orden?: 'recientes' | 'cierre' | 'monto';
+}
+
+// Opciones para los <select> de la UI (espejo de los enums del backend)
+export const ESTADOS_LLAMADO = ['vigente', 'adjudicado', 'desierto', 'sin_efecto'];
+
+export const TIPOS_CONTRATACION = [
+  'Compra Directa',
+  'Concurso de Precios',
+  'Licitación Abreviada',
+  'Licitación Pública',
+  'Compra por Excepción',
+  'Llamado a Expresiones de Interés',
+  'Concesión',
+  'Convenio Marco',
+  'Pregón',
+  'Procedimiento Especial',
+  'Solicitud de Información',
+];
+
+export const ORDENES = [
+  { valor: 'recientes', etiqueta: 'Más recientes' },
+  { valor: 'cierre', etiqueta: 'Próximas a cerrar' },
+  { valor: 'monto', etiqueta: 'Mayor monto adjudicado' },
+] as const;
+
 @Service()
 export class LicitacionesApi {
   private api = inject(Api);
 
-  buscar(page = 1, limit = 20): Observable<PaginaLicitaciones> {
-    return this.api.get<PaginaLicitaciones>(`licitaciones?page=${page}&limit=${limit}`);
+  buscar(filtros: FiltrosLicitaciones = {}): Observable<PaginaLicitaciones> {
+    // URLSearchParams arma el query string omitiendo lo que no vino
+    // y escapando acentos/espacios (los tipos tienen ambos)
+    const params = new URLSearchParams();
+    for (const [clave, valor] of Object.entries(filtros)) {
+      if (valor !== undefined && valor !== null && valor !== '') {
+        params.set(clave, String(valor));
+      }
+    }
+    return this.api.get<PaginaLicitaciones>(`licitaciones?${params.toString()}`);
   }
 
   getPorId(id: string): Observable<Licitacion> {

@@ -3,14 +3,16 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Licitacion, LicitacionDocument } from './schemas/licitacion.schema';
+import { OrdenLicitaciones } from './dto/buscar-licitaciones.dto';
+import type { BuscarLicitacionesDto } from './dto/buscar-licitaciones.dto';
 
-export interface FiltrosLicitacion {
-  tipo?: string;
-  inciso?: number;
-  texto?: string;
-  page?: number;
-  limit?: number;
-}
+// Cada orden del DTO mapea a un sort de Mongo. Tabla de datos > switch:
+// agregar un orden nuevo es una línea, no una rama más.
+const ORDENES: Record<OrdenLicitaciones, Record<string, 1 | -1>> = {
+  [OrdenLicitaciones.RECIENTES]: { fechaPublicacion: -1 },
+  [OrdenLicitaciones.CIERRE]: { fechaRecepcionOfertas: 1 },
+  [OrdenLicitaciones.MONTO]: { 'adjudicacion.montoTotal': -1 },
+};
 
 @Injectable()
 export class LicitacionesService {
@@ -19,13 +21,15 @@ export class LicitacionesService {
     private readonly licitacionModel: Model<LicitacionDocument>,
   ) {}
 
-  async buscar(filtros: FiltrosLicitacion) {
-    const { tipo, inciso, texto, page = 1, limit = 20 } = filtros;
+  async buscar(filtros: BuscarLicitacionesDto) {
+    const { tipo, estado, anio, inciso, texto, page, limit, orden } = filtros;
 
     // Armamos el filtro de Mongo incrementalmente - solo agregamos
     // condiciones para los parámetros que realmente vinieron en la query.
     const query: Record<string, any> = {};
     if (tipo) query.tipo = tipo;
+    if (estado) query.estado = estado;
+    if (anio) query.anio = anio;
     if (inciso) query['organismo.inciso'] = inciso;
     if (texto) query.$text = { $search: texto };
 
@@ -34,7 +38,7 @@ export class LicitacionesService {
     const [datos, total] = await Promise.all([
       this.licitacionModel
         .find(query)
-        .sort({ fechaRecepcionOfertas: 1 })
+        .sort(ORDENES[orden])
         .skip(skip)
         .limit(limit)
         .lean(), // .lean() devuelve objetos JS planos, no documentos

@@ -1,9 +1,19 @@
 // src/main.ts
 import { NestFactory } from '@nestjs/core';
+import { ValidationPipe } from '@nestjs/common';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+
+  // Validación global: todo @Query()/@Body() tipado con un DTO se valida
+  // y transforma automáticamente antes de llegar al controller.
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true, // elimina propiedades que el DTO no declara
+      transform: true, // instancia el DTO real (aplica @Type y defaults)
+    }),
+  );
 
   // CORS: permite que Angular (localhost:4200) consuma esta API
   app.enableCors({

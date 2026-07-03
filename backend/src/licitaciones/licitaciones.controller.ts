@@ -2,6 +2,7 @@
 import { Controller, Get, Param, Query } from '@nestjs/common';
 import { LicitacionesService } from './licitaciones.service';
 import { RssIngestService } from './rss-ingest.service';
+import { BuscarLicitacionesDto } from './dto/buscar-licitaciones.dto';
 
 @Controller('licitaciones')
 export class LicitacionesController {
@@ -10,21 +11,12 @@ export class LicitacionesController {
     private readonly rssIngestService: RssIngestService,
   ) {}
 
+  // Todo el parseo/validación de la query vive en el DTO + ValidationPipe
+  // global: acá llega un objeto ya tipado, convertido y con defaults.
+  // Comparar con la versión anterior: 5 @Query() sueltos y parseInt a mano.
   @Get()
-  buscar(
-    @Query('tipo') tipo?: string,
-    @Query('inciso') inciso?: string,
-    @Query('texto') texto?: string,
-    @Query('page') page?: string,
-    @Query('limit') limit?: string,
-  ) {
-    return this.licitacionesService.buscar({
-      tipo,
-      inciso: inciso ? parseInt(inciso, 10) : undefined,
-      texto,
-      page: page ? parseInt(page, 10) : undefined,
-      limit: limit ? parseInt(limit, 10) : undefined,
-    });
+  buscar(@Query() filtros: BuscarLicitacionesDto) {
+    return this.licitacionesService.buscar(filtros);
   }
 
   @Get(':id')

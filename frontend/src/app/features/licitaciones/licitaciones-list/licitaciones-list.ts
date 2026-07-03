@@ -1,8 +1,17 @@
 // src/app/features/licitaciones/licitaciones-list/licitaciones-list.ts
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { DatePipe } from '@angular/common';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
-import { LicitacionesApi, PaginaLicitaciones } from '../licitaciones-api';
+import { Subject, debounceTime, distinctUntilChanged, switchMap, catchError, of } from 'rxjs';
+import {
+  LicitacionesApi,
+  PaginaLicitaciones,
+  FiltrosLicitaciones,
+  ESTADOS_LLAMADO,
+  TIPOS_CONTRATACION,
+  ORDENES,
+} from '../licitaciones-api';
 
 @Component({
   selector: 'app-licitaciones-list',
@@ -14,27 +23,77 @@ import { LicitacionesApi, PaginaLicitaciones } from '../licitaciones-api';
 export class LicitacionesList implements OnInit {
   private licitacionesApi = inject(LicitacionesApi);
 
-  // Guardamos la página completa (datos + metadata de paginación) en un
-  // solo signal: siempre llegan juntos del backend, separarlos en varios
-  // signals solo agregaría estados intermedios inconsistentes.
+  // opciones para los <select> del template
+  readonly estados = ESTADOS_LLAMADO;
+  readonly tipos = TIPOS_CONTRATACION;
+  readonly ordenes = ORDENES;
+  readonly anios = [2026, 2025, 2024, 2023, 2022];
+
   pagina = signal<PaginaLicitaciones | null>(null);
   cargando = signal(true);
   error = signal<string | null>(null);
+
+  // Filtros vigentes. Campos planos (no signals): no los muestra la UI,
+  // solo alimentan la próxima query — la UI reacciona a `pagina`.
+  private filtros: FiltrosLicitaciones = { orden: 'recientes' };
+
+  // Texto con debounce (mismo patrón que proveedores); los <select>
+  // disparan directo porque un cambio de select ya es una acción única.
+  private busqueda$ = new Subject<string>();
+
+  constructor() {
+    this.busqueda$
+      .pipe(
+        debounceTime(300),
+        distinctUntilChanged(),
+        switchMap((texto) => {
+          this.filtros.texto = texto || undefined;
+          this.cargando.set(true);
+          return this.licitacionesApi.buscar({ ...this.filtros, page: 1 }).pipe(
+            catchError(() => {
+              this.error.set('Error buscando licitaciones');
+              return of(null);
+            }),
+          );
+        }),
+        takeUntilDestroyed(),
+      )
+      .subscribe((data) => {
+        if (data) {
+          this.pagina.set(data);
+          this.error.set(null);
+        }
+        this.cargando.set(false);
+      });
+  }
 
   ngOnInit(): void {
     this.cargar(1);
   }
 
+  onBuscar(valor: string): void {
+    this.busqueda$.next(valor);
+  }
+
+  onFiltro(campo: 'estado' | 'tipo' | 'orden' | 'anio', valor: string): void {
+    if (campo === 'anio') {
+      this.filtros.anio = valor ? parseInt(valor, 10) : undefined;
+    } else {
+      this.filtros[campo] = (valor || undefined) as never;
+    }
+    this.cargar(1); // cualquier cambio de filtro vuelve a la página 1
+  }
+
   cargar(page: number): void {
     this.cargando.set(true);
-    this.error.set(null);
-    this.licitacionesApi.buscar(page).subscribe({
+    this.licitacionesApi.buscar({ ...this.filtros, page }).subscribe({
       next: (data) => {
         this.pagina.set(data);
+        this.error.set(null);
         this.cargando.set(false);
       },
-      error: (err) => {
-        this.error.set(`No se pudo cargar licitaciones (${err.status ?? 'sin conexión'})`);
+      error: () => {
+        this.error.set('Error cargando licitaciones');
         this.cargando.set(false);
       },
     });
@@ -50,8 +109,6 @@ export class LicitacionesList implements OnInit {
     if (p && p.page < p.totalPaginas) this.cargar(p.page + 1);
   }
 
-  // Los llamados importados de sistemas externos (IM, OSE, ANCAP...) tienen
-  // id con prefijo "i" — eran los 157 que fallaban en BUG-1.
   esImportado(id: string): boolean {
     return id.startsWith('i');
   }
