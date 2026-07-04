@@ -1,8 +1,9 @@
 # Boletín de Contrataciones del Estado Uruguayo — Handoff
 
 > Documento de contexto para continuar el desarrollo en Claude Code.
-> Actualizado: 2026-07-03, al cierre de la sesión que cerró el Bloque 3
-> (serialización + BUG-4) y el Bloque 2 (codigueras + proveedores a Mongo).
+> Actualizado: 2026-07-04, al cierre de la sesión que construyó el circuito
+> completo de alertas NUEVO_LLAMADO (Bloque 5, primera parte): CRUD + motor
+> de matcheo en la ingesta + notificaciones + frontend con campanita.
 
 ---
 
@@ -102,6 +103,14 @@ backend/src/
 │   ├── types/               # CONTRATO de dominio (el frontend lo duplica a mano — deuda aceptada)
 │   │                        #   ProveedorPublico = Omit<ProveedorRupe,'fechaIngesta'> (vista de API)
 │   └── filters/             # GlobalExceptionFilter: shape único {statusCode, error, mensajes[], ruta, timestamp}
+├── alertas/                 # Bloque 5: el boletín propiamente dicho (single-user, sin auth)
+│   ├── schemas/alerta.schema.ts       # criterios = SOLO lo matcheable hoy (sin monto/familias: el RSS no los trae)
+│   ├── schemas/notificacion.schema.ts # snapshots (hechos, no referencias); índice único alertaId+licitacionId
+│   ├── matcher/alerta-matcher.ts      # FUNCIÓN PURA: OR dentro de un criterio, AND entre criterios,
+│   │                                  #   palabras clave por PREFIJO de palabra ("obra"→"obras", no "cobranza")
+│   ├── alertas-matcher.service.ts     # el motor: recibe los llamados NUEVOS de la ingesta (no importa licitaciones)
+│   ├── alertas.service.ts/.controller # CRUD /alertas (400 si no hay ningún criterio)
+│   └── notificaciones.service/.controller  # GET /notificaciones (+sinLeer), PATCH /:id/leida
 ├── codigueras/              # codiguera oficial de organismos (73 incisos, 527 UEs)
 │   ├── schemas/organismo-codiguera.schema.ts  # 1 doc por inciso, UEs embebidas, nombreNormalizado indexado
 │   ├── parsers/codigueras-xml.parser.ts       # puro; normalizarNombreOrganismo = la clave del cruce
@@ -112,7 +121,9 @@ backend/src/
 │   ├── parsers/                       # FUNCIONES PURAS testeadas con fixtures reales
 │   │   ├── rss-llamado.parser.ts      #   RSS → dominio (normalizarDescripcion + REGEX_NUMERO_COMPRA)
 │   │   └── ocds-release.parser.ts     #   OCDS tender/award → dominio
-│   ├── rss-ingest.service.ts          # descarga + orquesta + enriquecerInciso (codiguera) + upsert por id
+│   ├── rss-ingest.service.ts          # descarga + orquesta + enriquecerInciso + upsert por id
+│   │                                  #   (includeResultMetadata detecta INSERCIÓN → dispara el motor de alertas;
+│   │                                  #    los errores del motor NO tiran la ingesta)
 │   ├── rss-scheduler.service.ts       # cron 15min + ingesta al arrancar (OnModuleInit)
 │   ├── ocds-ingest.service.ts         # ZIP → bulkWrite lotes de 1000, l-* antes que a-*
 │   ├── dto/buscar-licitaciones.dto.ts # page/limit/texto/estado/tipo/anio/inciso/orden validados
@@ -134,9 +145,14 @@ backend/src/
 
 frontend/src/app/
 ├── app.config.ts            # zoneless + withComponentInputBinding
-├── app.ts/.html             # navbar Licitaciones|Proveedores + health check (con spec real)
+├── app.ts/.html             # navbar + health check + campanita 🔔 (contador sinLeer,
+│                            #   auto-refresh 60s: timer+switchMap+catchError adentro)
 ├── core/api.ts              # wrapper HttpClient
 └── features/
+    ├── alertas/
+    │   ├── alertas-api.ts             # CRUD + notificaciones (Api ganó patch/delete)
+    │   ├── alertas-page/              # crear (palabras/incisos por coma, tipo) + pausar/borrar
+    │   └── notificaciones-page/       # bandeja: link al detalle, marcar leída, solo-no-leídas
     ├── licitaciones/
     │   ├── licitaciones-api.ts        # tipos duplicados + buscar(filtros) + getPorId
     │   ├── licitaciones-list/         # barra de filtros (texto debounce + selects) + paginación + badges
@@ -170,6 +186,14 @@ frontend/src/app/
    La vista pública se define en tipos (`ProveedorPublico`) y en la frontera (service).
 9. **inciso 0 es un valor honesto**: las UCC/UACM (compras centralizadas) no son un
    inciso. 920/929 llamados del RSS resuelven por nombre; los 9 restantes quedan en 0.
+10. **El motor de alertas recibe, no busca**: la ingesta le PASA los llamados nuevos
+    (alertas no importa licitaciones — dependencia en una sola dirección, sin ciclos).
+    La decisión de matcheo es una función pura testeada; el service solo orquesta.
+11. **Una alerta solo promete lo que puede cumplir**: el schema persiste únicamente
+    los criterios matcheables con los datos reales (sin monto/familias hasta que
+    alguna fuente los traiga). Una alerta sin criterios se rechaza con 400.
+12. **Las notificaciones son hechos**: snapshots de la alerta y el llamado al momento
+    del match — borrar la alerta no reescribe la historia de qué se notificó.
 
 ---
 
@@ -186,8 +210,10 @@ frontend/src/app/
 - ✅ Perfil de empresa: `GET /proveedores/:documento/perfil` — aggregation `$facet`
 - ✅ Frontend: circuito completo navegable; filtro por inciso ahora cubre también
   los llamados que entraron solo por RSS
-- ✅ Tests: 45 backend (parsers con fixtures reales) + 5 frontend (vitest, primera
-  vez que corren) — todos verdes
+- ✅ Alertas NUEVO_LLAMADO de punta a punta: crear alerta en /alertas → el cron
+  detecta llamados INSERTADOS → matcher → notificación en Mongo + log 🔔 →
+  campanita en la navbar (contador auto-refrescado) → bandeja → detalle del llamado
+- ✅ Tests: 57 backend (parsers y matcher con fixtures reales) + 6 frontend — verdes
 - ✅ Git al día: historia en Conventional Commits (ver `git log --oneline`)
 
 ### Comandos
@@ -208,12 +234,15 @@ frontend/src/app/
 
 ## 6. PENDIENTES (en orden de valor sugerido)
 
-### Bloque 5 — Alertas (EL SIGUIENTE; sin bloqueos, los tipos ya existen en shared/types)
-- [ ] CRUD de alertas (criterios = mismos filtros del DTO de búsqueda)
-- [ ] Motor de matcheo en la ingesta RSS: llamado nuevo vs alertas activas.
-      Nota: el RSS upsertea — "nuevo" = el upsert no encontró el id
-      (ver comentario en rss-ingest.service sobre returnDocument).
-- [ ] Canal: empezar por log/email
+### Bloque 5 — Alertas (primera parte HECHA: NUEVO_LLAMADO completo)
+- [x] CRUD de alertas + motor de matcheo en la ingesta + notificaciones + frontend
+- [ ] Tipo VENCIMIENTO: cron diario que cruce vigentes con fechaRecepcionOfertas
+      próxima (<48h) contra las alertas — es de RELOJ, no de ingesta
+- [ ] Canal email (nodemailer o provider): las notificaciones ya se persisten,
+      email es OTRO canal sobre el mismo motor
+- Tipo ADJUDICACION: declarado en el dominio pero NO construible en tiempo útil
+  (las adjudicaciones llegan por el dump OCDS anual). Cambiaría con el scraping
+  de la página de detalle.
 
 ### Bloque 6 — Calidad e infra
 - [ ] Ingestar más años OCDS (2024, 2023... — bajar ZIPs y correr script)
