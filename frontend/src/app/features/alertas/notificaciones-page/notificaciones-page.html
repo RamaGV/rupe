@@ -1,0 +1,64 @@
+<!-- src/app/features/alertas/notificaciones-page/notificaciones-page.html -->
+<div class="p-8">
+  <div class="flex items-center justify-between mb-6">
+    <h1 class="text-2xl font-bold text-gray-800">
+      Notificaciones
+      @if (bandeja(); as b) {
+        @if (b.sinLeer > 0) {
+          <span class="text-sm font-normal text-gray-500">({{ b.sinLeer }} sin leer)</span>
+        }
+      }
+    </h1>
+    <label class="flex items-center gap-2 text-sm text-gray-600 cursor-pointer">
+      <input type="checkbox" [checked]="soloNoLeidas()" (change)="toggleFiltro()" />
+      Solo no leídas
+    </label>
+  </div>
+
+  @if (error(); as err) {
+    <p class="text-red-600 bg-red-50 rounded-lg p-4 mb-4">{{ err }}</p>
+  }
+
+  @if (cargando()) {
+    <p class="text-gray-500">Cargando...</p>
+  } @else if (bandeja(); as b) {
+    <div class="space-y-3">
+      @for (n of b.datos; track n.id) {
+        <div
+          class="bg-white rounded-xl shadow p-4 flex items-start justify-between gap-4"
+          [class.opacity-60]="n.leida"
+        >
+          <div class="min-w-0">
+            <p class="text-xs text-gray-400 mb-1">
+              🔔 {{ n.alertaNombre }} · {{ n.creadaEn | slice:0:10 }}
+            </p>
+            <a
+              [routerLink]="['/licitaciones', n.licitacionId]"
+              class="font-medium text-blue-700 hover:underline"
+            >
+              {{ n.descripcion }}
+            </a>
+            <p class="text-sm text-gray-600 mt-1">
+              {{ n.organismo }} · {{ n.tipoContratacion }}
+              @if (n.fechaRecepcionOfertas) {
+                · cierra {{ n.fechaRecepcionOfertas | slice:0:10 }}
+              }
+            </p>
+          </div>
+          @if (!n.leida) {
+            <button
+              (click)="marcarLeida(n.id)"
+              class="px-3 py-1 rounded-lg text-xs border border-gray-200 hover:bg-gray-50 shrink-0"
+            >
+              Marcar leída
+            </button>
+          }
+        </div>
+      } @empty {
+        <div class="bg-white rounded-xl shadow p-8 text-center text-gray-500">
+          {{ soloNoLeidas() ? 'Nada sin leer 🎉' : 'Sin notificaciones todavía — cuando una alerta matchee un llamado nuevo, aparece acá' }}
+        </div>
+      }
+    </div>
+  }
+</div>

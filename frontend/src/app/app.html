@@ -17,8 +17,29 @@
       >
         Proveedores
       </a>
+      <a
+        routerLink="/alertas"
+        routerLinkActive="text-blue-600 font-medium"
+        class="text-sm text-gray-600 hover:text-blue-600"
+      >
+        Alertas
+      </a>
     </div>
-    <div class="flex items-center gap-2">
+    <div class="flex items-center gap-4">
+      <a
+        routerLink="/notificaciones"
+        class="relative text-lg hover:opacity-70"
+        title="Notificaciones"
+      >
+        🔔
+        @if (sinLeer() > 0) {
+          <span
+            class="absolute -top-1 -right-2 bg-red-600 text-white text-[10px] font-bold rounded-full px-1.5 py-0.5 leading-none"
+          >
+            {{ sinLeer() }}
+          </span>
+        }
+      </a>
       <span class="text-xs text-gray-500">Backend:</span>
       <span
         class="px-2 py-0.5 rounded-full text-xs font-medium"

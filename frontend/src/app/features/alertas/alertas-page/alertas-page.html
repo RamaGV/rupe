@@ -1,0 +1,137 @@
+<!-- src/app/features/alertas/alertas-page/alertas-page.html -->
+<div class="p-8">
+  <h1 class="text-2xl font-bold text-gray-800 mb-6">Mis alertas</h1>
+
+  @if (error(); as err) {
+    <p class="text-red-600 bg-red-50 rounded-lg p-4 mb-4">{{ err }}</p>
+  }
+
+  <!-- Crear alerta -->
+  <div class="bg-white rounded-xl shadow p-6 mb-8">
+    <h2 class="text-sm font-semibold text-gray-600 uppercase mb-4">Nueva alerta</h2>
+    <div class="grid gap-4 md:grid-cols-2">
+      <div>
+        <label class="block text-sm text-gray-600 mb-1">Nombre *</label>
+        <input
+          type="text"
+          placeholder='Ej: "Obras en Colonia"'
+          class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
+          [value]="nombre()"
+          (input)="nombre.set($any($event.target).value)"
+        />
+      </div>
+      <div>
+        <label class="block text-sm text-gray-600 mb-1">Palabras clave (separadas por coma)</label>
+        <input
+          type="text"
+          placeholder="terminal, obra, saneamiento"
+          class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
+          [value]="palabrasClave()"
+          (input)="palabrasClave.set($any($event.target).value)"
+        />
+        <p class="text-xs text-gray-400 mt-1">
+          Matchean por prefijo de palabra: "obra" encuentra "obras", no "cobranza"
+        </p>
+      </div>
+      <div>
+        <label class="block text-sm text-gray-600 mb-1">Códigos de inciso (separados por coma)</label>
+        <input
+          type="text"
+          placeholder="98, 83 (98 = Int. de Montevideo)"
+          class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
+          [value]="incisos()"
+          (input)="incisos.set($any($event.target).value)"
+        />
+      </div>
+      <div>
+        <label class="block text-sm text-gray-600 mb-1">Tipo de contratación</label>
+        <select
+          class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-300"
+          [value]="tipoSeleccionado()"
+          (change)="tipoSeleccionado.set($any($event.target).value)"
+        >
+          <option value="">Cualquiera</option>
+          @for (tipo of tiposContratacion; track tipo) {
+            <option [value]="tipo">{{ tipo }}</option>
+          }
+        </select>
+      </div>
+    </div>
+    <div class="flex items-center justify-between mt-4">
+      <p class="text-xs text-gray-400">
+        Al menos un criterio además del nombre. Los criterios se combinan con Y.
+      </p>
+      <button
+        (click)="crear()"
+        [disabled]="!puedeCrear() || guardando()"
+        class="px-4 py-2 rounded-lg text-sm font-medium bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-40"
+      >
+        {{ guardando() ? 'Creando...' : 'Crear alerta' }}
+      </button>
+    </div>
+  </div>
+
+  <!-- Lista de alertas -->
+  @if (cargando()) {
+    <p class="text-gray-500">Cargando...</p>
+  } @else {
+    <div class="bg-white rounded-xl shadow overflow-hidden">
+      <table class="w-full text-sm text-left">
+        <thead class="bg-gray-100 text-gray-600 uppercase text-xs">
+          <tr>
+            <th class="px-4 py-3">Alerta</th>
+            <th class="px-4 py-3">Criterios</th>
+            <th class="px-4 py-3">Estado</th>
+            <th class="px-4 py-3 text-right">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (alerta of alertas(); track alerta.id) {
+            <tr class="border-t border-gray-100 hover:bg-gray-50">
+              <td class="px-4 py-3 font-medium">{{ alerta.nombre }}</td>
+              <td class="px-4 py-3 text-gray-600">
+                @if (alerta.criterios.palabrasClave?.length) {
+                  <span class="mr-2">🔤 {{ alerta.criterios.palabrasClave!.join(', ') }}</span>
+                }
+                @if (alerta.criterios.incisos?.length) {
+                  <span class="mr-2">🏛 inciso {{ alerta.criterios.incisos!.join(', ') }}</span>
+                }
+                @if (alerta.criterios.tiposContratacion?.length) {
+                  <span>📄 {{ alerta.criterios.tiposContratacion!.join(', ') }}</span>
+                }
+              </td>
+              <td class="px-4 py-3">
+                <span
+                  class="px-2 py-1 rounded-full text-xs font-medium"
+                  [class]="alerta.activa ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'"
+                >
+                  {{ alerta.activa ? 'activa' : 'pausada' }}
+                </span>
+              </td>
+              <td class="px-4 py-3 text-right whitespace-nowrap">
+                <button
+                  (click)="toggleActiva(alerta)"
+                  class="px-3 py-1 rounded-lg text-xs border border-gray-200 hover:bg-gray-50 mr-2"
+                >
+                  {{ alerta.activa ? 'Pausar' : 'Reactivar' }}
+                </button>
+                <button
+                  (click)="eliminar(alerta)"
+                  class="px-3 py-1 rounded-lg text-xs border border-red-200 text-red-600 hover:bg-red-50"
+                >
+                  Borrar
+                </button>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="4" class="px-4 py-8 text-center text-gray-500">
+                Sin alertas todavía — creá la primera arriba
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>
