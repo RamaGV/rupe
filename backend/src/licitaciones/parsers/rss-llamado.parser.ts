@@ -30,8 +30,13 @@ export function mapearItemALicitacion(item: RssItemRaw): LlamadoParseado {
   const { numeroCompra, anio } = extraerNumeroYAnio(item.title);
   const organismo = extraerOrganismo(item.title);
   const id = extraerIdDeLink(item.link);
-  const fechaRecepcionOfertas = extraerFechaApertura(item.description);
-  const fechaPublicacion = extraerFechaPublicacion(item.description);
+
+  // La <description> cruda trae HTML dentro de CDATA (ver
+  // normalizarDescripcion). Se normaliza UNA vez acá y todos los
+  // extractores de abajo trabajan sobre texto plano.
+  const descripcionPlana = normalizarDescripcion(item.description);
+  const fechaRecepcionOfertas = extraerFechaApertura(descripcionPlana);
+  const fechaPublicacion = extraerFechaPublicacion(descripcionPlana);
 
   return {
     id,
@@ -39,14 +44,14 @@ export function mapearItemALicitacion(item: RssItemRaw): LlamadoParseado {
     anio,
     tipo,
     estado: EstadoLlamado.VIGENTE, // este RSS solo trae vigentes
-    aperturaElectronica: item.description.includes('Apertura electrónica'),
+    aperturaElectronica: descripcionPlana.includes('Apertura electrónica'),
     organismo,
-    descripcion: limpiarDescripcion(item.description),
+    descripcion: limpiarDescripcion(descripcionPlana),
     items: [], // el RSS no trae el detalle de items - se completa
                // más adelante si scrapeamos la página de detalle
     fechaPublicacion: fechaPublicacion ?? new Date(item.pubDate),
     fechaRecepcionOfertas,
-    fechaUltimaModificacion: extraerFechaModificacion(item.description),
+    fechaUltimaModificacion: extraerFechaModificacion(descripcionPlana),
     urlOrigen: item.link,
     fechaIngesta: new Date(),
   };
@@ -154,11 +159,46 @@ function parsearFechaUruguaya(fecha: string, hora?: string): Date {
   return new Date(anio, mes - 1, dia, h, m);
 }
 
-function limpiarDescripcion(description: string): string {
+// La <description> del feed es CDATA con HTML adentro (forma real, auditoría
+// del feed completo 2026-07, 929 items):
+//   "objeto<br/> Recepción de ofertas hasta: ...<br/>Publicado:&nbsp;03&sol;07&sol;2026 12:20hs"
+// CDATA significa "texto literal": fast-xml-parser NO decodifica entidades
+// ahí adentro (y es correcto — es la definición de CDATA). Sin este paso:
+//   - limpiarDescripcion separaba por \n que nunca existe (BUG-4)
+//   - "Publicado:&nbsp;03&sol;07&sol;2026" no matcheaba el regex de fecha
+//     (caía al fallback pubDate, pérdida menor)
+//   - "&Uacute;ltima Modificaci&oacute;n" no matcheaba NUNCA:
+//     fechaUltimaModificacion era siempre undefined (pérdida silenciosa)
+//
+// Universo real de entidades en el feed: &sol; &nbsp; &Uacute; &oacute;
+// (las 4 vienen del boilerplate de fechas). El mapa agrega las XML estándar
+// y los acentos del español como tolerancia previsible. Una entidad
+// desconocida se deja tal cual: queda visible en la descripción (telemetría),
+// que es mejor que borrarla en silencio.
+const ENTIDADES_HTML: Record<string, string> = {
+  // universo observado en el feed
+  '&sol;': '/',
+  '&nbsp;': ' ',
+  '&Uacute;': 'Ú',
+  '&oacute;': 'ó',
+  // tolerancia previsible: XML estándar + acentos del español
+  '&amp;': '&', '&lt;': '<', '&gt;': '>', '&quot;': '"', '&apos;': "'",
+  '&aacute;': 'á', '&eacute;': 'é', '&iacute;': 'í', '&uacute;': 'ú',
+  '&Aacute;': 'Á', '&Eacute;': 'É', '&Iacute;': 'Í', '&Oacute;': 'Ó',
+  '&ntilde;': 'ñ', '&Ntilde;': 'Ñ',
+};
+
+export function normalizarDescripcion(raw: string): string {
+  return raw
+    .replace(/<br\s*\/?>/gi, '\n') // el feed usa solo "<br/>"; tolera variantes
+    .replace(/&[a-zA-Z]+;/g, (entidad) => ENTIDADES_HTML[entidad] ?? entidad);
+}
+
+function limpiarDescripcion(descripcionPlana: string): string {
   // Nos quedamos solo con la primera línea real (el objeto de la
   // compra), descartando las líneas de fechas que ya extrajimos
-  // como campos estructurados.
-  return description
+  // como campos estructurados. Espera texto YA normalizado.
+  return descripcionPlana
     .split('\n')
     .map((l) => l.trim())
     .find((l) => l.length > 0 && !l.startsWith('Recepción') && !l.startsWith('Publicado'))
