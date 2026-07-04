@@ -177,3 +177,23 @@ describe('mapearAwardALicitacion', () => {
     expect(patch.adjudicacion?.montoTotal).toBeUndefined(); // sumar UYU+USD sería mentir
   });
 });
+
+// El caso que destapó el bug del organismo vacío: releases SIN buyer
+// (aparecen en los dumps reales — el a239659 reportado por el autor).
+describe('releases sin buyer', () => {
+  it('un award sin buyer NO devuelve organismo (devolver vacio pisaria el bueno)', () => {
+    const sinBuyer = JSON.parse(JSON.stringify(awardReal)) as OcdsRelease;
+    delete sinBuyer.buyer;
+
+    const patch = mapearAwardALicitacion(sinBuyer);
+    expect(patch.organismo).toBeUndefined();
+  });
+
+  it('un tender sin buyer tampoco (los minimos del upsert cubren la insercion)', () => {
+    const sinBuyer = JSON.parse(JSON.stringify(tenderReal)) as OcdsRelease;
+    delete sinBuyer.buyer;
+
+    const lic = mapearTenderALicitacion(sinBuyer);
+    expect(lic.organismo).toBeUndefined();
+  });
+});

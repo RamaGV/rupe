@@ -111,7 +111,13 @@ export class OcdsIngestService {
           ops.push({
             updateOne: {
               filter: { id: doc.id },
-              update: { $set: doc },
+              // $setOnInsert también acá: un tender sin buyer no trae
+              // organismo (sería pisar con vacío) — pero si este release
+              // CREA el doc, los mínimos garantizan el shape completo.
+              update: {
+                $set: doc,
+                $setOnInsert: this.minimosParaInsertar(release, doc),
+              },
               upsert: true,
             },
           });
@@ -175,6 +181,9 @@ export class OcdsIngestService {
       aperturaElectronica: false,
       descripcion: '',
       fechaPublicacion: new Date(release.date),
+      // si el release que crea el doc no trae buyer (los mapeos devuelven
+      // organismo undefined para no pisar), el doc nace con el 0 honesto
+      organismo: { inciso: 0, nombreInciso: '', unidadEjecutora: '' },
     };
     // nunca repetir claves que ya van en $set
     for (const clave of Object.keys(patch)) delete minimos[clave];

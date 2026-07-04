@@ -102,12 +102,18 @@ function mapearTipo(procurementMethodDetails?: string): TipoContratacion {
 
 // parties[].id tiene forma "66-1" = inciso 66 (OSE), unidad ejecutora 1.
 // Es la resolución del TODO `inciso: 0` que dejamos en el parser del RSS.
-function mapearOrganismo(buyer?: { id: string; name: string }): Organismo {
-  const inciso = parseInt(buyer?.id?.split('-')[0] ?? '', 10);
+//
+// Sin buyer devuelve undefined, NO un organismo vacío: estos mapeos son
+// patches parciales ($set) y un {inciso:0, nombreInciso:''} pisaría el
+// organismo bueno que dejó el release anterior (pasó con awards sin
+// buyer del dump 2025 — BUG detectado en producción por el autor).
+function mapearOrganismo(buyer?: { id: string; name: string }): Organismo | undefined {
+  if (!buyer) return undefined;
+  const inciso = parseInt(buyer.id?.split('-')[0] ?? '', 10);
   return {
     inciso: Number.isNaN(inciso) ? 0 : inciso,
-    nombreInciso: buyer?.name ?? '',
-    unidadEjecutora: buyer?.name ?? '',
+    nombreInciso: buyer.name ?? '',
+    unidadEjecutora: buyer.name ?? '',
   };
 }
 

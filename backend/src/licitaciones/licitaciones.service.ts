@@ -5,6 +5,7 @@ import { Model } from 'mongoose';
 import { Licitacion, LicitacionDocument } from './schemas/licitacion.schema';
 import { OrdenLicitaciones } from './dto/buscar-licitaciones.dto';
 import type { BuscarLicitacionesDto } from './dto/buscar-licitaciones.dto';
+import { EstadoLlamado } from '../shared/types/enums';
 
 // Cada orden del DTO mapea a un sort de Mongo. Tabla de datos > switch:
 // agregar un orden nuevo es una línea, no una rama más.
@@ -15,11 +16,17 @@ const ORDENES: Record<OrdenLicitaciones, Record<string, 1 | -1>> = {
 };
 
 // Campos internos que NO son parte del contrato de la API: metadatos de
-// Mongo (_id, __v) y telemetría de ingesta. Se excluyen como PROYECCIÓN
-// (Mongo ni siquiera los envía) en vez de con class-transformer, que
-// necesita instancias de clase y acá usamos .lean() justamente para
-// no pagar la hidratación de documentos.
-const PROYECCION_PUBLICA = { _id: 0, __v: 0, fechaIngesta: 0 } as const;
+// Mongo (_id, __v), telemetría de ingesta y los timestamps del schema.
+// Se excluyen como PROYECCIÓN (Mongo ni siquiera los envía) en vez de
+// con class-transformer, que necesita instancias de clase y acá usamos
+// .lean() justamente para no pagar la hidratación de documentos.
+const PROYECCION_PUBLICA = {
+  _id: 0,
+  __v: 0,
+  fechaIngesta: 0,
+  createdAt: 0,
+  updatedAt: 0,
+} as const;
 
 @Injectable()
 export class LicitacionesService {
@@ -36,6 +43,17 @@ export class LicitacionesService {
     const query: Record<string, any> = {};
     if (tipo) query.tipo = tipo;
     if (estado) query.estado = estado;
+    // "vigente" para la API significa "SE PUEDE OFERTAR HOY". En la base,
+    // estado guarda lo que la fuente dijo — y un tender OCDS queda
+    // 'active' en su último release aunque haya cerrado hace meses
+    // (~6.9k docs así en el dump 2025; nadie publica el "cerró").
+    // Derivamos: vigente = estado vigente Y (cierre futuro O desconocido).
+    if (estado === EstadoLlamado.VIGENTE) {
+      query.$or = [
+        { fechaRecepcionOfertas: { $gte: new Date() } },
+        { fechaRecepcionOfertas: null }, // en Mongo, null matchea también al campo ausente
+      ];
+    }
     if (anio) query.anio = anio;
     if (inciso) query['organismo.inciso'] = inciso;
     if (texto) query.$text = { $search: texto };
