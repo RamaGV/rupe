@@ -6,6 +6,7 @@ import { XMLParser } from 'fast-xml-parser';
 import { Licitacion, LicitacionDocument } from './schemas/licitacion.schema';
 import { mapearItemALicitacion } from './parsers/rss-llamado.parser';
 import type { RssItemRaw, LlamadoParseado } from './parsers/rss-llamado.parser';
+import { CodiguerasService } from '../codigueras/codigueras.service';
 
 // URL base del RSS de llamados vigentes. Los parámetros de la URL
 // (tipo-pub, rango-fecha, etc.) los agregamos en un servicio aparte
@@ -23,6 +24,7 @@ export class RssIngestService {
   constructor(
     @InjectModel(Licitacion.name)
     private readonly licitacionModel: Model<LicitacionDocument>,
+    private readonly codiguerasService: CodiguerasService,
   ) {}
 
   // Punto de entrada: se llama desde el scheduler (paso siguiente)
@@ -39,6 +41,7 @@ export class RssIngestService {
     for (const item of items) {
       try {
         const licitacion = mapearItemALicitacion(item);
+        this.enriquecerInciso(licitacion);
         await this.upsertLicitacion(licitacion);
         procesados++;
       } catch (err) {
@@ -73,6 +76,20 @@ export class RssIngestService {
     // Si hay un solo <item>, fast-xml-parser lo devuelve como objeto
     // suelto en vez de array de 1 elemento - normalizamos siempre a array.
     return Array.isArray(items) ? items : [items];
+  }
+
+  // --- Enriquecimiento ----------------------------------------------
+
+  // El RSS no trae el código de inciso; el parser (puro, sin acceso a
+  // Mongo) lo deja en 0 y el ORQUESTADOR lo resuelve acá cruzando el
+  // nombre contra la codiguera. Si no hay match (UCC/UACM, que no son
+  // un inciso), queda el 0 honesto.
+  private enriquecerInciso(licitacion: LlamadoParseado): void {
+    if (licitacion.organismo && licitacion.organismo.inciso === 0) {
+      licitacion.organismo.inciso = this.codiguerasService.resolverInciso(
+        licitacion.organismo.nombreInciso,
+      );
+    }
   }
 
   // --- Persistencia -------------------------------------------------

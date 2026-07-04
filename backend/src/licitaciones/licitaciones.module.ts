@@ -2,6 +2,7 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ScheduleModule } from '@nestjs/schedule';
+import { CodiguerasModule } from '../codigueras/codigueras.module';
 import { Licitacion, LicitacionSchema } from './schemas/licitacion.schema';
 import { RssIngestService } from './rss-ingest.service';
 import { RssSchedulerService } from './rss-scheduler.service';
@@ -20,6 +21,10 @@ import { LicitacionesService } from './licitaciones.service';
     // Lo importamos aca (no en AppModule) porque es el único
     // módulo que por ahora usa cron jobs.
     ScheduleModule.forRoot(),
+    // Codiguera de incisos: el enriquecimiento nombre → inciso de la
+    // ingesta RSS. Nest inicializa los módulos importados primero, así
+    // que el mapa en memoria está cargado antes de la ingesta al arrancar.
+    CodiguerasModule,
   ],
   controllers: [LicitacionesController],
   providers: [RssIngestService, RssSchedulerService, LicitacionesService],

@@ -122,7 +122,8 @@ export function extraerOrganismo(title: string): Organismo {
   const nombreInciso = partes[0].replace(REGEX_CORTE_HASTA_NUMERO, '').trim();
 
   return {
-    inciso: 0, // se resuelve cruzando con ORGANISMOS_INCISO en un paso posterior
+    inciso: 0, // el parser es puro (no ve Mongo): lo resuelve el orquestador
+               // (RssIngestService.enriquecerInciso) contra la codiguera
     nombreInciso,
     unidadEjecutora,
   };
