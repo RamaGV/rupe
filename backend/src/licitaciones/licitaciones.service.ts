@@ -14,6 +14,13 @@ const ORDENES: Record<OrdenLicitaciones, Record<string, 1 | -1>> = {
   [OrdenLicitaciones.MONTO]: { 'adjudicacion.montoTotal': -1 },
 };
 
+// Campos internos que NO son parte del contrato de la API: metadatos de
+// Mongo (_id, __v) y telemetría de ingesta. Se excluyen como PROYECCIÓN
+// (Mongo ni siquiera los envía) en vez de con class-transformer, que
+// necesita instancias de clase y acá usamos .lean() justamente para
+// no pagar la hidratación de documentos.
+const PROYECCION_PUBLICA = { _id: 0, __v: 0, fechaIngesta: 0 } as const;
+
 @Injectable()
 export class LicitacionesService {
   constructor(
@@ -37,7 +44,7 @@ export class LicitacionesService {
 
     const [datos, total] = await Promise.all([
       this.licitacionModel
-        .find(query)
+        .find(query, PROYECCION_PUBLICA)
         .sort(ORDENES[orden])
         .skip(skip)
         .limit(limit)
@@ -55,7 +62,7 @@ export class LicitacionesService {
   }
 
   async buscarPorId(id: string) {
-    return this.licitacionModel.findOne({ id }).lean();
+    return this.licitacionModel.findOne({ id }, PROYECCION_PUBLICA).lean();
   }
 
   // Resumen de adjudicaciones ganadas por un proveedor (para PerfilEmpresa).

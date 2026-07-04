@@ -28,6 +28,11 @@ export interface ProveedorRupe {
   fechaIngesta: Date;
 }
 
+// Vista PÚBLICA del proveedor: lo que devuelve la API. fechaIngesta es
+// telemetría interna de la ingesta, no parte del contrato (el frontend,
+// que duplica estos tipos a mano, nunca la incluyó).
+export type ProveedorPublico = Omit<ProveedorRupe, 'fechaIngesta'>;
+
 // Una adjudicación resumida, para el historial del perfil
 export interface AdjudicacionResumen {
   licitacionId: string;
@@ -49,8 +54,9 @@ export interface MontoPorMoneda {
 }
 
 // Perfil enriquecido: datos de RUPE + historial real de adjudicaciones
-// (cruce por numeroDocumento contra la colección de licitaciones)
-export interface PerfilEmpresa extends ProveedorRupe {
+// (cruce por numeroDocumento contra la colección de licitaciones).
+// Extiende la vista pública: el perfil es una RESPUESTA de la API.
+export interface PerfilEmpresa extends ProveedorPublico {
   totalLicitacionesGanadas: number;
   montosPorMoneda: MontoPorMoneda[];
   organismosMasFrecuentes: string[];
