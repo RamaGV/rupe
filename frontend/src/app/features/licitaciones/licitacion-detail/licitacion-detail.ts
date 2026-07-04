@@ -26,12 +26,17 @@ export class LicitacionDetail implements OnInit {
   ngOnInit(): void {
     this.licitacionesApi.getPorId(this.id()).subscribe({
       next: (data) => {
-        if (!data) this.error.set(`No existe la licitación "${this.id()}"`);
         this.licitacion.set(data);
         this.cargando.set(false);
       },
       error: (err) => {
-        this.error.set(`Error cargando la licitación (${err.status ?? 'sin conexión'})`);
+        // El backend ahora responde 404 con shape consistente
+        // ({ mensajes: [...] }) gracias al exception filter global
+        this.error.set(
+          err.status === 404
+            ? `No existe la licitación "${this.id()}"`
+            : `Error cargando la licitación (${err.status ?? 'sin conexión'})`,
+        );
         this.cargando.set(false);
       },
     });

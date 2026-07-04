@@ -1,5 +1,5 @@
 // src/licitaciones/licitaciones.controller.ts
-import { Controller, Get, Param, Query } from '@nestjs/common';
+import { Controller, Get, Param, Query, NotFoundException } from '@nestjs/common';
 import { LicitacionesService } from './licitaciones.service';
 import { RssIngestService } from './rss-ingest.service';
 import { BuscarLicitacionesDto } from './dto/buscar-licitaciones.dto';
@@ -19,9 +19,16 @@ export class LicitacionesController {
     return this.licitacionesService.buscar(filtros);
   }
 
+  // Antes devolvía 200 con null si no existía — un cliente tenía que
+  // chequear el body para saber si encontró algo. 404 es el contrato
+  // correcto de REST, y el exception filter le da la forma estándar.
   @Get(':id')
-  buscarPorId(@Param('id') id: string) {
-    return this.licitacionesService.buscarPorId(id);
+  async buscarPorId(@Param('id') id: string) {
+    const licitacion = await this.licitacionesService.buscarPorId(id);
+    if (!licitacion) {
+      throw new NotFoundException(`No existe la licitación con id "${id}"`);
+    }
+    return licitacion;
   }
 
   // Endpoint de debug para disparar la ingesta a mano sin esperar

@@ -2,9 +2,15 @@
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { AppModule } from './app.module';
+import { GlobalExceptionFilter } from './shared/filters/global-exception.filter';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+
+  // Embudo único de errores: shape consistente + log de los 500.
+  // (Alternativa: registrarlo como provider APP_FILTER si algún día
+  // necesita inyectar dependencias — hoy no las necesita.)
+  app.useGlobalFilters(new GlobalExceptionFilter());
 
   // Validación global: todo @Query()/@Body() tipado con un DTO se valida
   // y transforma automáticamente antes de llegar al controller.
