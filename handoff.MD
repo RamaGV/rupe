@@ -1,9 +1,10 @@
 # Boletín de Contrataciones del Estado Uruguayo — Handoff
 
 > Documento de contexto para continuar el desarrollo en Claude Code.
-> Actualizado: 2026-07-04, al cierre de la sesión que construyó el circuito
-> completo de alertas NUEVO_LLAMADO (Bloque 5, primera parte): CRUD + motor
-> de matcheo en la ingesta + notificaciones + frontend con campanita.
+> Actualizado: 2026-07-04, al cierre de la sesión que completó las alertas
+> de VENCIMIENTO (cron de reloj) y arregló tres bugs destapados usando el
+> producto: timestamps en las respuestas, el "vigente eterno" de OCDS y
+> awards sin buyer que pisaban el organismo. Bloque 5: solo falta email.
 
 ---
 
@@ -125,6 +126,9 @@ backend/src/
 │   │                                  #   (includeResultMetadata detecta INSERCIÓN → dispara el motor de alertas;
 │   │                                  #    los errores del motor NO tiran la ingesta)
 │   ├── rss-scheduler.service.ts       # cron 15min + ingesta al arrancar (OnModuleInit)
+│   ├── vencimientos-scheduler.service.ts  # cron diario 8:00 + al arrancar: vigentes que
+│   │                                  #   cierran en <48h → alertasMatcher.procesarVencimientos()
+│   │                                  #   (vive ACÁ y no en alertas/: este módulo sabe consultar)
 │   ├── ocds-ingest.service.ts         # ZIP → bulkWrite lotes de 1000, l-* antes que a-*
 │   ├── dto/buscar-licitaciones.dto.ts # page/limit/texto/estado/tipo/anio/inciso/orden validados
 │   ├── licitaciones.service.ts        # buscar/buscarPorId con PROYECCION_PUBLICA (_id,__v,fechaIngesta fuera)
@@ -194,6 +198,13 @@ frontend/src/app/
     alguna fuente los traiga). Una alerta sin criterios se rechaza con 400.
 12. **Las notificaciones son hechos**: snapshots de la alerta y el llamado al momento
     del match — borrar la alerta no reescribe la historia de qué se notificó.
+13. **La base guarda lo que la fuente dijo; la API responde lo que se pregunta**:
+    un tender OCDS queda 'active' en su último release aunque haya cerrado hace
+    meses (~6k docs). `estado=vigente` en la API se DERIVA: vigente Y (cierre
+    futuro O desconocido) = "se puede ofertar hoy". El dato crudo no se pisa.
+14. **En un patch parcial, "no sé" nunca pisa "sé"**: los mapeos OCDS devuelven
+    undefined (no un objeto vacío) cuando el release no trae el dato — las claves
+    undefined se eliminan antes del $set. El shape mínimo lo cubre $setOnInsert.
 
 ---
 
@@ -213,7 +224,10 @@ frontend/src/app/
 - ✅ Alertas NUEVO_LLAMADO de punta a punta: crear alerta en /alertas → el cron
   detecta llamados INSERTADOS → matcher → notificación en Mongo + log 🔔 →
   campanita en la navbar (contador auto-refrescado) → bandeja → detalle del llamado
-- ✅ Tests: 57 backend (parsers y matcher con fixtures reales) + 6 frontend — verdes
+- ✅ Alertas VENCIMIENTO: cron diario 8:00 + al arrancar, ventana 48h, mismo motor
+  y mismo dedupe (⏰ en la bandeja). Debug: GET /licitaciones/debug/vencimientos-ahora
+- ✅ estado=vigente devuelve vigentes REALES (~920, no 6.906): derivación por fecha
+- ✅ Tests: 59 backend (parsers y matcher con fixtures reales) + 6 frontend — verdes
 - ✅ Git al día: historia en Conventional Commits (ver `git log --oneline`)
 
 ### Comandos
@@ -234,15 +248,17 @@ frontend/src/app/
 
 ## 6. PENDIENTES (en orden de valor sugerido)
 
-### Bloque 5 — Alertas (primera parte HECHA: NUEVO_LLAMADO completo)
+### Bloque 5 — Alertas (HECHO salvo email)
 - [x] CRUD de alertas + motor de matcheo en la ingesta + notificaciones + frontend
-- [ ] Tipo VENCIMIENTO: cron diario que cruce vigentes con fechaRecepcionOfertas
-      próxima (<48h) contra las alertas — es de RELOJ, no de ingesta
+- [x] Tipo VENCIMIENTO: cron de reloj (diario 8:00 + al arrancar), ventana 48h
 - [ ] Canal email (nodemailer o provider): las notificaciones ya se persisten,
-      email es OTRO canal sobre el mismo motor
+      email es OTRO canal sobre el mismo motor. Requiere que el autor elija
+      proveedor y aporte credenciales (SMTP app password / Resend / etc.)
 - Tipo ADJUDICACION: declarado en el dominio pero NO construible en tiempo útil
   (las adjudicaciones llegan por el dump OCDS anual). Cambiaría con el scraping
   de la página de detalle.
+- Refinamiento anotado: ventana de aviso por-alerta ("avisame 7 días antes") =
+  un campo en el schema de Alerta + filtrar en el scheduler.
 
 ### Bloque 6 — Calidad e infra
 - [ ] Ingestar más años OCDS (2024, 2023... — bajar ZIPs y correr script)
