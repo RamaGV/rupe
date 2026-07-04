@@ -27,3 +27,20 @@ export interface Alerta {
   activa: boolean;
   creadaEn: Date;
 }
+
+// El HECHO de que una alerta matcheó un llamado: snapshots, no
+// referencias (si la alerta se borra, el registro no cambia de
+// significado). licitacionId es el id externo de ARCE → navegable
+// a /licitaciones/:id.
+export interface NotificacionAlerta {
+  id: string;
+  alertaId: string;
+  alertaNombre: string;
+  licitacionId: string;
+  descripcion: string;
+  organismo: string;
+  tipoContratacion: string;
+  fechaRecepcionOfertas?: Date;
+  leida: boolean;
+  creadaEn: Date;
+}

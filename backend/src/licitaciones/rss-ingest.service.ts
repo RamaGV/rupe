@@ -7,6 +7,7 @@ import { Licitacion, LicitacionDocument } from './schemas/licitacion.schema';
 import { mapearItemALicitacion } from './parsers/rss-llamado.parser';
 import type { RssItemRaw, LlamadoParseado } from './parsers/rss-llamado.parser';
 import { CodiguerasService } from '../codigueras/codigueras.service';
+import { AlertasMatcherService } from '../alertas/alertas-matcher.service';
 
 // URL base del RSS de llamados vigentes. Los parámetros de la URL
 // (tipo-pub, rango-fecha, etc.) los agregamos en un servicio aparte
@@ -25,11 +26,12 @@ export class RssIngestService {
     @InjectModel(Licitacion.name)
     private readonly licitacionModel: Model<LicitacionDocument>,
     private readonly codiguerasService: CodiguerasService,
+    private readonly alertasMatcher: AlertasMatcherService,
   ) {}
 
   // Punto de entrada: se llama desde el scheduler (paso siguiente)
   // o manualmente desde un endpoint de debug.
-  async ingestarRss(): Promise<{ procesados: number; errores: number }> {
+  async ingestarRss(): Promise<{ procesados: number; errores: number; nuevos: number }> {
     this.logger.log('Iniciando ingesta del RSS de ARCE...');
 
     const xml = await this.descargarRss();
@@ -37,12 +39,14 @@ export class RssIngestService {
 
     let procesados = 0;
     let errores = 0;
+    const nuevos: LlamadoParseado[] = [];
 
     for (const item of items) {
       try {
         const licitacion = mapearItemALicitacion(item);
         this.enriquecerInciso(licitacion);
-        await this.upsertLicitacion(licitacion);
+        const { esNuevo } = await this.upsertLicitacion(licitacion);
+        if (esNuevo) nuevos.push(licitacion);
         procesados++;
       } catch (err) {
         errores++;
@@ -52,8 +56,27 @@ export class RssIngestService {
       }
     }
 
-    this.logger.log(`Ingesta completa: ${procesados} ok, ${errores} con error`);
-    return { procesados, errores };
+    await this.dispararAlertas(nuevos);
+
+    this.logger.log(
+      `Ingesta completa: ${procesados} ok, ${errores} con error, ${nuevos.length} nuevos`,
+    );
+    return { procesados, errores, nuevos: nuevos.length };
+  }
+
+  // El motor de alertas corre DESPUÉS del loop (los upserts ya están
+  // seguros en Mongo) y sus errores no tiran la ingesta: notificar es
+  // valor agregado, persistir los llamados es la misión (regla 5).
+  private async dispararAlertas(nuevos: LlamadoParseado[]): Promise<void> {
+    if (nuevos.length === 0) return;
+    try {
+      const notificaciones = await this.alertasMatcher.procesarNuevosLlamados(nuevos);
+      if (notificaciones > 0) {
+        this.logger.log(`Motor de alertas: ${notificaciones} notificaciones generadas`);
+      }
+    } catch (err) {
+      this.logger.error(`El motor de alertas falló (la ingesta siguió): ${err.message}`);
+    }
   }
 
   // --- Descarga ---------------------------------------------------
@@ -94,20 +117,23 @@ export class RssIngestService {
 
   // --- Persistencia -------------------------------------------------
 
-  private async upsertLicitacion(licitacion: LlamadoParseado): Promise<void> {
+  private async upsertLicitacion(
+    licitacion: LlamadoParseado,
+  ): Promise<{ esNuevo: boolean }> {
     // findOneAndUpdate con upsert:true es la operación clave: si el
     // "id" (el de ARCE, no el _id de Mongo) ya existe, actualiza el
     // documento; si no existe, lo crea. Así nunca duplicamos un
     // llamado aunque el RSS lo repita en cada corrida.
     //
-    // No pedimos el documento resultante (returnDocument) porque no
-    // lo usamos. Si algún día hace falta (ej: motor de alertas que
-    // reacciona a llamados NUEVOS), agregar { returnDocument: 'after' }
-    // — la opción vieja de Mongoose `new: true` está deprecada.
-    await this.licitacionModel.findOneAndUpdate(
+    // includeResultMetadata: el motor de alertas necesita distinguir
+    // INSERCIÓN de actualización (sin esto, cada llamado se
+    // re-notificaría en cada corrida del cron, 96 veces por día).
+    // updatedExisting === false → el upsert insertó: es un llamado nuevo.
+    const resultado = await this.licitacionModel.findOneAndUpdate(
       { id: licitacion.id },
       { $set: licitacion },
-      { upsert: true },
+      { upsert: true, includeResultMetadata: true },
     );
+    return { esNuevo: !resultado.lastErrorObject?.updatedExisting };
   }
 }

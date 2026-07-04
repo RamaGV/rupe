@@ -6,6 +6,7 @@ import { AppService } from './app.service';
 import { DatabaseModule } from './database/database.module';
 import { LicitacionesModule } from './licitaciones/licitaciones.module';
 import { ProveedoresModule } from './proveedores/proveedores.module';
+import { AlertasModule } from './alertas/alertas.module';
 
 @Module({
   imports: [
@@ -14,8 +15,9 @@ import { ProveedoresModule } from './proveedores/proveedores.module';
       envFilePath: '../.env',
     }),
     DatabaseModule,
-    ProveedoresModule, 
+    ProveedoresModule,
     LicitacionesModule,
+    AlertasModule,
   ],
   controllers: [AppController],
   providers: [AppService],

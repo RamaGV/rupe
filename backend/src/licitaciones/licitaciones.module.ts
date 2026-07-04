@@ -3,6 +3,7 @@ import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ScheduleModule } from '@nestjs/schedule';
 import { CodiguerasModule } from '../codigueras/codigueras.module';
+import { AlertasModule } from '../alertas/alertas.module';
 import { Licitacion, LicitacionSchema } from './schemas/licitacion.schema';
 import { RssIngestService } from './rss-ingest.service';
 import { RssSchedulerService } from './rss-scheduler.service';
@@ -25,6 +26,10 @@ import { LicitacionesService } from './licitaciones.service';
     // ingesta RSS. Nest inicializa los módulos importados primero, así
     // que el mapa en memoria está cargado antes de la ingesta al arrancar.
     CodiguerasModule,
+    // El motor de alertas: la ingesta le pasa los llamados NUEVOS.
+    // La dependencia va en una sola dirección (alertas no sabe de
+    // licitaciones), así que no hay ciclo.
+    AlertasModule,
   ],
   controllers: [LicitacionesController],
   providers: [RssIngestService, RssSchedulerService, LicitacionesService],

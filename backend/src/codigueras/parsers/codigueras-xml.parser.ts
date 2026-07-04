@@ -28,19 +28,17 @@ export interface UnidadEjecutoraCodiguera {
 // viene en atributos (prefijados con @_ por fast-xml-parser).
 const xmlParser = new XMLParser({ ignoreAttributes: false });
 
-// Normaliza ambos lados del cruce por nombre (título del RSS vs codiguera):
-// sin tildes, minúsculas, espacios colapsados. Auditado contra el feed
-// completo (929 títulos): 920 matchean la codiguera con esta normalización.
-// Casos reales que resuelve: "Presidencia de la Republica" (RSS viejo, sin
-// tilde) vs "Presidencia de la República"; "Ministerio de Industria,
-// Energía  y Minería" (doble espacio en la codiguera oficial).
+// Normaliza ambos lados del cruce por nombre (título del RSS vs codiguera).
+// Auditado contra el feed completo (929 títulos): 920 matchean la codiguera
+// con esta normalización. Casos reales que resuelve: "Presidencia de la
+// Republica" (RSS viejo, sin tilde) vs "Presidencia de la República";
+// "Ministerio de Industria, Energía  y Minería" (doble espacio oficial).
+// Delega en la normalización canónica de shared/texto — el nombre propio
+// existe para que el código de codigueras diga QUÉ compara, no CÓMO.
+import { normalizarTexto } from '../../shared/texto/normalizar';
+
 export function normalizarNombreOrganismo(nombre: string): string {
-  return nombre
-    .normalize('NFD')
-    .replace(/[̀-ͯ]/g, '') // saca los diacríticos que NFD separó
-    .toLowerCase()
-    .replace(/\s+/g, ' ')
-    .trim();
+  return normalizarTexto(nombre);
 }
 
 export function parsearIncisosXml(xml: string): IncisoCodiguera[] {
