@@ -1,281 +1,213 @@
 # Boletín de Contrataciones del Estado Uruguayo — Handoff
 
 > Documento de contexto para continuar el desarrollo en Claude Code.
-> Escrito al cierre de la sesión de arquitectura inicial. Refleja el estado real del repo.
+> Actualizado: 2026-07-03, al cierre de la sesión que completó ingesta OCDS,
+> perfil de empresa, filtros validados y exception filter.
 
 ---
 
 ## 1. Qué es este proyecto
 
-Sistema para visualizar y consultar contrataciones públicas del Estado uruguayo,
-ingiriendo datos de **ARCE / ACCE** (Agencia Reguladora de Compras Estatales) desde dos fuentes:
-
-- **RSS** del portal `comprasestatales.gub.uy` → licitaciones/llamados en tiempo casi real
-- **CSV mensuales de RUPE** (Registro Único de Proveedores del Estado) del catálogo de datos abiertos `catalogodatos.gub.uy`
-
+Sistema para visualizar y consultar contrataciones públicas del Estado uruguayo.
 El objetivo del autor es **aprender arquitectura profesional**, no solo entregar features.
-Cada decisión técnica debe explicarse. Preferir explicaciones de arquitectura, patrones y
-buenas prácticas sobre lo básico. El autor tiene experiencia con React, Next.js, Angular,
-NestJS, MongoDB, Docker y TypeScript.
+Cada decisión técnica debe explicarse (el porqué antes que el cómo). El autor tiene
+experiencia con React, Next.js, Angular, NestJS, MongoDB, Docker y TypeScript.
+
+**Cómo trabajar con el autor** (reglas confirmadas en sesiones anteriores):
+- Explicar el problema antes de escribir código; ofrecer alternativas con recomendación.
+- Verificar contra la fuente real antes de modelar datos (nunca inventar campos).
+- El autor levanta backend/frontend en SUS consolas y verifica con sus ojos:
+  darle checklists de qué mirar, no ejecutar servidores por él.
+- Tests unitarios y `tsc --noEmit` sí se corren automáticamente.
+- No avanzar de bloque sin confirmación. Commits: Conventional Commits en español.
 
 ---
 
-## 2. Stack técnico
+## 2. Fuentes de datos (verificadas contra las fuentes reales)
 
-### Backend
-- NestJS (última versión) + TypeScript
-- MongoDB vía Mongoose (`@nestjs/mongoose`)
-- `@nestjs/config` para variables de entorno
-- `@nestjs/schedule` para ingesta programada (cron)
-- `axios` para consumir servicios externos
-- `fast-xml-parser` para el RSS
-- `csv-parse` para los CSV de RUPE
+| Fuente | Qué trae | Rol |
+|---|---|---|
+| **RSS** `comprasestatales.gub.uy/consultas/rss` | Solo vigentes del año corriente, superficial (título/link/fechas) | Tiempo casi real (cron 15 min) |
+| **Dumps OCDS anuales** (catálogo `arce-datos-historicos-de-compras`) | Histórico completo 2002–2025: items con precios, adjudicaciones, proveedores, contactos | Profundidad histórica (batch anual) |
+| **CSV mensuales RUPE** (catálogo de datos abiertos) | Registro de proveedores | Identidad de empresas |
+| **Codigueras XML** (dataset `acce-compras-estatales`) | Incisos, unidades ejecutoras, monedas, tipos | PENDIENTE de ingestar |
 
-### Frontend
-- Angular 22 **standalone + zoneless** (usa Signals, `@if`/`@for`, `inject()`)
-- Tailwind CSS v4 (nativo vía `--style=tailwind`, sin `tailwind.config.js`)
-- RxJS
+Detalles críticos de las fuentes:
+- Los dumps OCDS se publican en **enero del año siguiente** (2025 salió 19/01/2026).
+  Un ZIP por año → 12 archivos `l-MM` (llamados) + 12 `a-MM` (adjudicaciones).
+  2025 = 144.560 releases. Se descargan A MANO a `backend/data/ocds/ocds-<año>.zip`.
+- `catalogodatos.gub.uy` rechaza clientes no-browser (`-A "Mozilla/5.0"`) y su cadena
+  TLS falla en curl (usar `-k` solo para reconocimiento).
+- CSV de RUPE: separador `;`, encoding latin1, "Sin dato" = vacío.
+
+**Claves de correlación entre fuentes** (la razón de varias decisiones):
+```
+OCDS tender.id      == id del portal == id extraído del RSS   (ej: "i455644")
+OCDS parties[].id   == "66-1" → inciso 66, unidad ejecutora 1
+OCDS supplier.id    == "R/214365280014" → RUT == numeroDocumento en RUPE
+```
+Los IDs con prefijo `i` son llamados IMPORTADOS de sistemas propios (IM, OSE, ANP,
+ANCAP...). El prefijo SE CONSERVA: es un identificador externo opaco, y `i495595`
+y `495595` podrían ser llamados distintos.
+
+---
+
+## 3. Stack y convenciones
+
+### Backend: NestJS 11 + Mongoose + MongoDB 7 (Docker local)
+- `@nestjs/config` (`.env` en la RAÍZ del repo, `envFilePath: '../.env'`)
+- `@nestjs/schedule` (cron RSS), `fast-xml-parser` (RSS), `adm-zip` (OCDS),
+  `csv-parse` (RUPE), `class-validator`/`class-transformer` (DTOs)
+- Por `isolatedModules`: tipos con `import type`, valores runtime con `import` normal.
+
+### Frontend: Angular 22 standalone + zoneless + Tailwind v4
+| Concepto | Convención actual (NO la de tutoriales viejos) |
+|---|---|
+| Archivos | `app.ts`, `app.html` (NO `app.component.ts`) |
+| Servicios | archivo `api.ts`, clase `Api`, decorador `@Service()` |
+| Inyección | `inject()` — NO constructor injection |
+| Reactividad | `signal()` + `.set()` obligatorio; zoneless |
+| Templates | `@if` / `@for` (NO `*ngIf`) |
+| Rutas | `withComponentInputBinding()`: params como `input()` del componente |
 
 ### Infra
-- Monorepo manual (`/backend`, `/frontend`)
-- MongoDB local vía Docker Compose (con autenticación root)
-- Atlas reservado para producción (aún no configurado)
+- Monorepo manual `/backend` + `/frontend`. Git en la raíz `RUPE/`.
+- OJO: hay un contenedor Mongo llamado `mongodb` (no el del docker-compose, que
+  crearía uno llamado `rupe`) ya corriendo en 27017 con los datos. No tocar Docker
+  si ese contenedor está arriba.
+- `.gitignore` cubre `backend/data/` entero (CSVs y ZIPs no se commitean).
 
 ---
 
-## 3. Convenciones importantes del entorno (NO son las de tutoriales viejos)
+## 4. Arquitectura actual
 
-Angular 20+ cambió convenciones. Respetar esto al generar código:
+```
+backend/src/
+├── main.ts                  # CORS + api/v1 + ValidationPipe global + ExceptionFilter global
+├── app.module.ts            # ConfigModule global + Database + Proveedores + Licitaciones
+├── database/                # MongooseModule.forRootAsync desde .env
+├── shared/
+│   ├── types/               # CONTRATO de dominio (el frontend lo duplica a mano — deuda aceptada)
+│   └── filters/             # GlobalExceptionFilter: shape único {statusCode, error, mensajes[], ruta, timestamp}
+├── licitaciones/
+│   ├── schemas/licitacion.schema.ts   # índices: id único, estado+fechaRecepcion, text, adjudicacion.proveedor.numeroDocumento (sparse)
+│   ├── parsers/                       # FUNCIONES PURAS testeadas con fixtures reales
+│   │   ├── rss-llamado.parser.ts      #   RSS → dominio (REGEX_NUMERO_COMPRA compartido)
+│   │   └── ocds-release.parser.ts     #   OCDS tender/award → dominio
+│   ├── rss-ingest.service.ts          # descarga + orquesta + upsert por id
+│   ├── rss-scheduler.service.ts       # cron 15min + ingesta al arrancar (OnModuleInit)
+│   ├── ocds-ingest.service.ts         # ZIP → bulkWrite lotes de 1000, l-* antes que a-*
+│   ├── dto/buscar-licitaciones.dto.ts # page/limit/texto/estado/tipo/anio/inciso/orden validados
+│   ├── licitaciones.service.ts        # buscar (filtros+orden), buscarPorId, resumenAdjudicacionesPorProveedor ($facet)
+│   └── licitaciones.controller.ts     # GET /licitaciones, /:id (404 si no existe), /debug/ingestar-ahora
+├── proveedores/
+│   ├── proveedores.service.ts         # buscar paginado + getPerfil (cruza CSV + Mongo en paralelo)
+│   └── proveedores.controller.ts      # GET /proveedores?page&limit&texto, /:documento, /:documento/perfil
+├── ingesta/                           # Ports & Adapters de proveedores
+│   ├── repositories/proveedores-repository.interface.ts  # buscar() y findByDocumento() — paginación EN el contrato
+│   ├── repositories/proveedores-csv.repository.ts        # cache en memoria, filtro+slice
+│   └── parsers/rupe-csv.parser.ts
+└── scripts/ingesta-ocds.ts            # npm run ingesta:ocds [-- 2024] — createApplicationContext
+                                       # con módulo propio (NO importa LicitacionesModule para no
+                                       # disparar el scheduler del RSS)
 
-| Concepto | Convención actual |
-|---|---|
-| Naming de archivos | `app.ts`, `app.html` (NO `app.component.ts`) |
-| Clase de componente raíz | `App` (NO `AppComponent`) |
-| Servicios | archivo `api.ts`, clase `Api`, decorador `@Service()` |
-| Inyección | `inject()` (NO constructor injection) — `@Service` solo soporta `inject()` |
-| Change detection | **zoneless**: usar `provideZonelessChangeDetection()`, NO Zone.js |
-| Reactividad UI | **obligatorio** usar `signal()` + `.set()`. Asignar a props normales NO refresca la UI |
-| Control flow | `@if` / `@for` en templates (NO `*ngIf` / `*ngFor`, no requiere `CommonModule`) |
+frontend/src/app/
+├── app.config.ts            # zoneless + withComponentInputBinding
+├── app.ts/.html             # navbar Licitaciones|Proveedores + health check
+├── core/api.ts              # wrapper HttpClient
+└── features/
+    ├── licitaciones/
+    │   ├── licitaciones-api.ts        # tipos duplicados + buscar(filtros) + getPorId
+    │   ├── licitaciones-list/         # barra de filtros (texto debounce + selects) + paginación + badges
+    │   └── licitacion-detail/         # adjudicación, items con precios, contacto; id por input()
+    └── proveedores/
+        ├── proveedores-api.ts         # buscar paginado + getPerfil
+        ├── proveedores-list/          # búsqueda RxJS (debounceTime+distinctUntilChanged+switchMap)
+        └── perfil-empresa/            # historial de adjudicaciones navegable
+```
 
-En el backend, por `isolatedModules` + `emitDecoratorMetadata`:
-- Tipos/interfaces usados en firmas decoradas van con `import type`
-- Valores en runtime (tokens `Symbol`, clases) van con `import` normal
+### Decisiones de arquitectura (respetar)
+1. **IDs externos son opacos**: se guardan tal cual (`i495595` con su `i`). El upsert
+   por `id` es lo que fusiona RSS y OCDS en el mismo documento.
+2. **Parsers = funciones puras** en `parsers/`, testeadas con fixtures REALES de las
+   fuentes (nunca ejemplos inventados). Regex validados contra el universo completo
+   (feed entero / dump entero) antes de escribirse.
+3. **Patrón Repository para proveedores**: paginación y búsqueda son parte del
+   contrato (interfaz), no del adaptador. Migrar a Mongo = swap de `useClass`.
+4. **Montos por moneda, nunca sumados entre monedas** (UYU+USD en un número = mentira).
+5. **Resiliencia de ingesta**: un item malo se loguea y se sigue. El `throw` de un
+   parser es telemetría (alarma de calidad de datos), no una falla del sistema.
+6. **bulkWrite para batch** (144k docs en ~70s), findOneAndUpdate para el RSS (~900).
+7. **Regex moderadamente estrictos**: `\w+` para IDs (tolera variantes nuevas) pero
+   sigue tirando error si falta el segmento — un regex demasiado estricto que
+   "matchea algo parecido" corrompe datos EN SILENCIO (pasó con `\d{3,7}`).
 
 ---
 
-## 4. Estructura actual del repo
+## 5. Estado: qué funciona hoy
 
-```
-RUPE/
-├── .env                      # credenciales reales (NO commiteado)
-├── .env.example
-├── .gitignore                # ignora node_modules, dist, .env, backend/data/**/*.csv
-├── docker-compose.yml        # MongoDB 7 con auth root vía variables de .env
-├── README.md
-│
-├── backend/
-│   ├── data/
-│   │   └── rupe/
-│   │       └── 2026-05.csv   # CSV de RUPE (separador ';', encoding latin1)
-│   └── src/
-│       ├── main.ts           # CORS, prefijo global api/v1, puerto
-│       ├── app.module.ts     # ConfigModule global + MongooseModule + módulos de negocio
-│       ├── app.controller.ts # GET /health
-│       ├── app.service.ts
-│       │
-│       ├── shared/types/     # CONTRATO compartido backend/frontend (Bloque 1)
-│       │   ├── enums.ts              # TipoContratacion, EstadoResolucion, EstadoLlamado,
-│       │   │                         # Moneda, FamiliaArticulo, TipoDocumento,
-│       │   │                         # EstadoProveedor (ACTIVO/EN INGRESO/BAJA DGI/DESCONOCIDO)
-│       │   ├── organismos.ts         # 99 incisos reales del SICE + TipoOrganismo
-│       │   ├── licitacion.types.ts   # Licitacion, Adjudicacion, ItemLlamado, Organismo...
-│       │   ├── proveedor.types.ts    # ProveedorRupe, PerfilEmpresa
-│       │   ├── alerta.types.ts       # Alerta, CriteriosAlerta, TipoAlerta
-│       │   └── index.ts              # barrel
-│       │
-│       ├── ingesta/          # Ports & Adapters — capa de acceso a datos
-│       │   ├── ingesta.module.ts
-│       │   ├── repositories/
-│       │   │   ├── proveedores-repository.interface.ts  # PROVEEDORES_REPOSITORY (Symbol) + interfaz
-│       │   │   └── proveedores-csv.repository.ts         # adaptador CSV (cache en memoria, latin1, ';')
-│       │   ├── parsers/
-│       │   │   └── rupe-csv.parser.ts                    # parsearFilaRupe() — función pura
-│       │   └── services/
-│       │       ├── rss-ingest.service.ts                # consume RSS, upsert a Mongo
-│       │       └── rss-scheduler.service.ts             # cron @nestjs/schedule + ingesta al arrancar
-│       │
-│       ├── proveedores/      # módulo de negocio RUPE
-│       │   ├── proveedores.module.ts
-│       │   ├── proveedores.controller.ts   # GET /proveedores, GET /proveedores/:documento
-│       │   └── proveedores.service.ts      # inyecta PROVEEDORES_REPOSITORY por token
-│       │
-│       └── licitaciones/     # módulo de negocio de llamados
-│           ├── licitaciones.module.ts
-│           ├── licitaciones.controller.ts  # GET /licitaciones, /:id, /debug/ingestar-ahora
-│           ├── licitaciones.service.ts
-│           └── schemas/                     # (probable) schema Mongoose de Licitacion
-│
-└── frontend/
-    └── src/
-        ├── main.ts
-        ├── styles.css                       # @import "tailwindcss";
-        ├── environments/
-        │   ├── environment.ts               # apiUrl: http://localhost:3000/api/v1
-        │   └── environment.prod.ts
-        └── app/
-            ├── app.ts / app.html / app.config.ts / app.routes.ts
-            ├── core/
-            │   └── api.ts                    # clase Api, wrapper HttpClient genérico get<T>/post<T>
-            └── features/
-                └── proveedores/
-                    ├── proveedores-api.ts
-                    └── proveedores-list/     # tabla con @for, signals, Tailwind
+- ✅ Ingesta RSS cada 15 min, **0 errores** (antes fallaban 157 por el regex de ID)
+- ✅ Ingesta OCDS 2025 completa: 35.502 llamados + 109.058 adjudicaciones, 0 errores, 71s
+- ✅ Mongo con ~35k licitaciones: 2025 completo (con adjudicaciones, montos,
+  items con precio unitario, contactos, inciso real) + vigentes 2026 del RSS
+- ✅ API: filtros validados (DTO+ValidationPipe), orden configurable, full-text,
+  404 correctos, errores con shape único
+- ✅ Perfil de empresa: `GET /proveedores/:documento/perfil` — aggregation `$facet`
+  (montos por moneda, top organismos, últimas 10 adjudicaciones)
+- ✅ Frontend: circuito completo navegable — lista licitaciones (filtros) → detalle
+  (adjudicación/items/contacto) → perfil del proveedor ganador → otra licitación.
+  Proveedores paginados con búsqueda debounced.
+- ✅ 31 tests unitarios verdes (parsers con fixtures reales)
+- ✅ Git al día: historia en Conventional Commits (ver `git log --oneline`)
+
+### Comandos
+```bash
+# Backend dev          cd backend && npm run start:dev
+# Frontend dev         cd frontend && ng serve
+# Tests                cd backend && npx jest
+# Ingesta OCDS         cd backend && npm run ingesta:ocds        # (usa data/ocds/ocds-2025.zip)
+#                      npm run ingesta:ocds -- 2024              # otro año (bajar ZIP antes)
+# Ingesta RSS manual   GET http://localhost:3000/api/v1/licitaciones/debug/ingestar-ahora
+# Drop licitaciones    docker exec -it mongodb mongosh -u admin -p admin --authenticationDatabase admin RUPE --eval "db.licitaciones.drop()"
 ```
 
 ---
 
-## 5. Decisiones de arquitectura ya tomadas (respetar y mantener)
+## 6. PENDIENTES (en orden de valor sugerido)
 
-1. **Patrón Repository / Ports & Adapters.** El acceso a datos está detrás de una interfaz
-   (`ProveedoresRepository`) inyectada por token `Symbol`. Hoy la implementación es CSV; migrar
-   a Mongo debe ser **solo** cambiar `useClass` en `ingesta.module.ts`, sin tocar controllers/services.
-   → **Pendiente**: crear `ProveedoresMongoRepository` como segundo adaptador y hacer el swap.
+### Bugs conocidos (chicos, no bloquean)
+- **BUG-4** — `limpiarDescripcion` del parser RSS separa por `\n` pero el feed usa
+  `<br/>`: las descripciones del RSS quedan con `<br/>` y fechas incrustadas.
+  (Las de OCDS están limpias.)
+- Los docs ingestados SOLO por RSS tienen `organismo.inciso: 0` (el RSS no trae
+  el código; OCDS sí). Se resuelve con las codigueras XML o esperando el dump anual.
+- `proveedores-list.spec.ts` (frontend) quedó genérico y probablemente no corre
+  (falta provideHttpClient en el TestBed). Los specs de frontend nunca se corrieron.
 
-2. **`shared/types` como contrato único.** Las interfaces viven en el backend. El frontend hoy
-   las **duplica** manualmente (deuda técnica aceptada). Mejora futura: npm workspaces o paquete
-   `@rupe/shared` para eliminar la duplicación.
+### Bloque 3 — resto
+- [ ] Serialización: ocultar `fechaIngesta`, `__v`, `_id` de las respuestas
+      (class-transformer o proyección en los .lean())
 
-3. **Datos reales, no supuestos.** Los enums se corrigieron contra los archivos reales
-   (ej. `EstadoProveedor` = ACTIVO / EN INGRESO / BAJA DGI, con fallback DESCONOCIDO). Mantener
-   esta disciplina: verificar contra la fuente antes de modelar.
+### Bloque 2 — cierre
+- [ ] `ProveedoresMongoRepository` + schema + comando de ingesta CSV→Mongo.
+      El swap debe ser SOLO cambiar `useClass` en `ingesta.module.ts`.
+- [ ] Ingesta de codigueras XML (incisos/unidades ejecutoras) → resolver inciso 0
 
-4. **Resiliencia en ingesta.** Un item que falla NO debe abortar toda la ingesta. Se loguea como
-   warning y se sigue (patrón ya aplicado en `RssIngestService`: "X ok, Y con error").
-
-5. **Cache en memoria en el repo CSV.** Los CSV se leen una vez al arrancar. Al migrar a Mongo
-   este cache desaparece (queries directas).
-
----
-
-## 6. Estado actual — qué funciona
-
-- ✅ Bloque 0: monorepo, NestJS con `/health` + CORS + `api/v1`, Angular zoneless + Tailwind
-- ✅ Bloque 1: modelos de dominio (`shared/types`) con datos reales
-- ✅ Bloque 2 (parcial): repo CSV de proveedores funcionando, endpoint `/proveedores` sirviendo
-  datos reales, frontend mostrando la tabla
-- ✅ MongoDB local vía Docker con auth root resuelta
-- ✅ Ingesta RSS conectada a Mongo: **799 items OK** en la última corrida
-
----
-
-## 7. BUGS ABIERTOS (arrancar por acá)
-
-### BUG-1 — 157 items de RSS fallan al extraer el ID  🔴 prioridad alta
-Síntoma:
-```
-No se pudo extraer el id del link: http://www.comprasestatales.gub.uy/consultas/detalle/id/i495595
-```
-Causa probable: el regex de extracción de ID en `RssIngestService` solo contempla IDs numéricos
-puros, pero el portal usa una variante con prefijo de letra (`id/i495595`, y quizá otras como
-`mostrar-llamado/1/id/...`). Hay al menos dos formatos de URL de detalle conviviendo.
-Acción: revisar todos los formatos de `link` en el feed real, generalizar el regex, agregar tests
-unitarios con las variantes encontradas. Verificar que suba de 799 → 956 OK.
-
-### BUG-2 — Warning de Mongoose `new` deprecado  🟡 prioridad baja
-Síntoma:
-```
-[MONGOOSE] Warning: the `new` option for findOneAndUpdate()/findOneAndReplace() is deprecated.
-Use `returnDocument: 'after'` instead.
-```
-Causa: uso de `{ new: true }` en algún `findOneAndUpdate` (probablemente el upsert del RSS).
-Acción: reemplazar por `{ returnDocument: 'after', upsert: true }`. No rompe nada, pero limpia el log.
-
----
-
-## 8. ROADMAP pendiente
-
-### Bloque 2 — completar ingesta (en curso)
-- [ ] BUG-1 y BUG-2
-- [ ] `ProveedoresMongoRepository` + schema Mongoose de proveedor → migrar CSV a Mongo
-- [ ] Comando/servicio de ingesta de CSV a Mongo (hoy el CSV vive solo en memoria)
-- [ ] Índices Mongo: por `numeroDocumento` (proveedores), por `id` y `numeroCompra` (licitaciones),
-      índice de texto para búsqueda por descripción
-- [ ] Validar encoding real del CSV (confirmar si latin1 vs utf-8 según acentos)
-
-### Bloque 3 — API de consulta robusta
-- [ ] DTOs de query con `class-validator` + `ValidationPipe` global
-- [ ] Paginación (limit/offset o cursor) — hoy `/proveedores` devuelve TODO, no escala
-- [ ] Filtros: por inciso, tipo de contratación, estado, rango de fechas, texto libre
-- [ ] Ordenamiento
-- [ ] Serialización con `class-transformer` (no exponer `fechaIngesta`, `urlOrigen`, etc. crudos)
-- [ ] Manejo de errores centralizado (exception filter) + shape de error consistente
-
-### Bloque 4 — Frontend real
-- [ ] Layout/shell: navbar + routing entre Licitaciones y Proveedores
-- [ ] Listado de licitaciones con filtros conectados a la API
-- [ ] Vista de detalle de licitación (items, contacto, aclaraciones, adjudicación)
-- [ ] Perfil de empresa (`PerfilEmpresa`): historial de adjudicaciones, montos, organismos frecuentes
-- [ ] Estados de carga/error/vacío consistentes (considerar un patrón de "resource state")
-- [ ] Búsqueda con debounce (RxJS `debounceTime` + `switchMap`)
-- [ ] Paginación en UI
-
-### Bloque 5 — Alertas (modelo ya definido)
-- [ ] CRUD de alertas (`Alerta`, `CriteriosAlerta`)
-- [ ] Motor de matcheo: al ingestar un llamado nuevo, evaluar contra alertas activas
-- [ ] Canal de notificación (empezar por log/email; definir después)
+### Bloque 5 — Alertas (el gran siguiente; los tipos ya existen en shared/types)
+- [ ] CRUD de alertas (criterios = mismos filtros del DTO de búsqueda)
+- [ ] Motor de matcheo en la ingesta RSS: llamado nuevo vs alertas activas
+- [ ] Canal: empezar por log/email
 
 ### Bloque 6 — Calidad e infra
-- [ ] Tests: unitarios de parsers (funciones puras, fáciles), e2e de endpoints
-- [ ] Extraer `shared/types` a paquete compartido (eliminar duplicación FE/BE)
-- [ ] Dockerizar backend y frontend; `docker-compose` completo (Mongo + API + web)
-- [ ] Configuración Atlas para producción (`MONGODB_URI_ATLAS` ya reservada en `.env`)
-- [ ] CI (lint + test + build) — Conventional Commits ya en uso, habilita changelog automático
-- [ ] Observabilidad: logs estructurados, health check que verifique la conexión a Mongo
+- [ ] Ingestar más años OCDS (2024, 2023... — bajar ZIPs y correr script)
+- [ ] Extraer `shared/types` a paquete compartido (hoy el frontend duplica a mano)
+- [ ] e2e de endpoints, CI, dockerizar backend+frontend, Atlas para prod
+- [ ] Observabilidad: health check que verifique Mongo
 
----
-
-## 9. Comandos de referencia
-
-```bash
-# Levantar Mongo local
-docker-compose up -d
-docker-compose down -v          # -v resetea el volumen (borra datos)
-
-# Entrar a mongosh autenticado
-docker exec -it rupe-mongodb mongosh -u admin -p <PASS> --authenticationDatabase admin
-
-# Backend
-cd backend && npm run start:dev
-
-# Frontend
-cd frontend && ng serve
-
-# Endpoints clave
-GET http://localhost:3000/api/v1/health
-GET http://localhost:3000/api/v1/proveedores
-GET http://localhost:3000/api/v1/licitaciones
-GET http://localhost:3000/api/v1/licitaciones/debug/ingestar-ahora
-```
-
-## 10. Fuentes de datos reales
-
-- RSS de llamados: `comprasestatales.gub.uy/consultas/rss/...` (parámetros de tipo-pub, tipo-fecha,
-  orden, rango-fecha). Devuelve `application/rss+xml`.
-- CSV de RUPE: catálogo `catalogodatos.gub.uy`, dataset "ARCE - Registro Único de Proveedores del
-  Estado (RUPE)". Un CSV por mes, separador `;`, campos vacíos como el literal `"Sin dato"`,
-  columnas: `pais_prov; identificacion_prov; denominacion_social_prov; domicilio_fiscal;
-  localidad_prov; departamento_prov; estado_prov`. No hay columna de tipo de documento
-  (se infiere por longitud: 12 dígitos = RUT, 7-8 = cédula).
-- Detalle de llamado (para scraping/enriquecimiento futuro):
-  `comprasestatales.gub.uy/consultas/detalle/...`
-
----
-
-## 11. Cómo trabajar en este proyecto (para el asistente)
-
-- No avanzar de bloque sin confirmación del autor.
-- Explicar el problema antes de escribir código, y el porqué de cada decisión.
-- Ofrecer alternativas y buenas prácticas cuando existan.
-- Verificar contra la fuente real antes de modelar datos (no inventar campos/valores).
-- Respetar las convenciones Angular 22 y las reglas de `import type` del backend.
-- Mantener el patrón Repository intacto: la lógica de negocio no debe saber de dónde vienen los datos.
+### Ideas anotadas
+- Guardar el dato CRUDO (item RSS / release OCDS) junto al parseado para poder
+  re-procesar la historia cuando un parser mejora.
+- Scraping de la página de detalle (server-rendered, verificado viable) para
+  enriquecer vigentes: pliegos adjuntos, prórrogas, aclaraciones.
+- `Manual_de_Interfaz_G2B.pdf` documenta una interfaz de consulta del portal
+  (en el dataset `acce-compras-estatales`).
