@@ -2,6 +2,7 @@
 import { Controller, Get, Param, Query, NotFoundException } from '@nestjs/common';
 import { LicitacionesService } from './licitaciones.service';
 import { RssIngestService } from './rss-ingest.service';
+import { VencimientosSchedulerService } from './vencimientos-scheduler.service';
 import { BuscarLicitacionesDto } from './dto/buscar-licitaciones.dto';
 
 @Controller('licitaciones')
@@ -9,6 +10,7 @@ export class LicitacionesController {
   constructor(
     private readonly licitacionesService: LicitacionesService,
     private readonly rssIngestService: RssIngestService,
+    private readonly vencimientosScheduler: VencimientosSchedulerService,
   ) {}
 
   // Todo el parseo/validación de la query vive en el DTO + ValidationPipe
@@ -37,5 +39,11 @@ export class LicitacionesController {
   @Get('debug/ingestar-ahora')
   ingestarAhora() {
     return this.rssIngestService.ingestarRss();
+  }
+
+  // Dispara la revisión de vencimientos sin esperar al cron de las 8:00
+  @Get('debug/vencimientos-ahora')
+  vencimientosAhora() {
+    return this.vencimientosScheduler.revisarVencimientos();
   }
 }

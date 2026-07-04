@@ -23,8 +23,20 @@ export class AlertasPage implements OnInit {
   palabrasClave = signal('');
   incisos = signal('');
   tipoSeleccionado = signal('');
+  tipoAlerta = signal('nuevo_llamado');
 
   tiposContratacion = TIPOS_CONTRATACION;
+
+  // Espejo de los tipos CON MOTOR en el backend (adjudicación no se
+  // ofrece: sus datos llegan por el dump anual, avisaría un año tarde)
+  tiposAlerta = [
+    { valor: 'nuevo_llamado', etiqueta: '🔔 Cuando se publique un llamado nuevo' },
+    { valor: 'vencimiento', etiqueta: '⏰ Cuando algo que matchea cierre en menos de 48h' },
+  ];
+
+  etiquetaTipo(tipo: string): string {
+    return tipo === 'vencimiento' ? '⏰ vencimiento' : '🔔 nuevo llamado';
+  }
 
   ngOnInit(): void {
     this.cargar();
@@ -54,17 +66,22 @@ export class AlertasPage implements OnInit {
 
     this.guardando.set(true);
     this.alertasApi
-      .crearAlerta(this.nombre().trim(), {
-        ...(palabrasClave.length && { palabrasClave }),
-        ...(incisos.length && { incisos }),
-        ...(tiposContratacion.length && { tiposContratacion }),
-      })
+      .crearAlerta(
+        this.nombre().trim(),
+        {
+          ...(palabrasClave.length && { palabrasClave }),
+          ...(incisos.length && { incisos }),
+          ...(tiposContratacion.length && { tiposContratacion }),
+        },
+        this.tipoAlerta(),
+      )
       .subscribe({
         next: () => {
           this.nombre.set('');
           this.palabrasClave.set('');
           this.incisos.set('');
           this.tipoSeleccionado.set('');
+          this.tipoAlerta.set('nuevo_llamado');
           this.error.set(null);
           this.guardando.set(false);
           this.cargar();

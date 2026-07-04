@@ -33,22 +33,39 @@ export class AlertasMatcherService {
     private readonly notificacionModel: Model<NotificacionDocument>,
   ) {}
 
-  async procesarNuevosLlamados(nuevos: LlamadoNuevo[]): Promise<number> {
-    if (nuevos.length === 0) return 0;
+  // Los dos motores comparten el núcleo: cambia QUÉ alertas cargan
+  // (tipo) y el snapshot que queda en la notificación. El dedupe por
+  // índice único alertaId+licitacionId también sirve al vencimiento:
+  // el cron diario re-encuentra el mismo llamado dentro de la ventana
+  // y el duplicado se descarta solo.
 
-    const alertas = await this.alertaModel
-      .find({ activa: true, tipo: TipoAlerta.NUEVO_LLAMADO })
-      .lean();
+  async procesarNuevosLlamados(nuevos: LlamadoNuevo[]): Promise<number> {
+    return this.procesar(nuevos, TipoAlerta.NUEVO_LLAMADO, '🔔');
+  }
+
+  async procesarVencimientos(porVencer: LlamadoNuevo[]): Promise<number> {
+    return this.procesar(porVencer, TipoAlerta.VENCIMIENTO, '⏰');
+  }
+
+  private async procesar(
+    llamados: LlamadoNuevo[],
+    tipo: TipoAlerta,
+    icono: string,
+  ): Promise<number> {
+    if (llamados.length === 0) return 0;
+
+    const alertas = await this.alertaModel.find({ activa: true, tipo }).lean();
     if (alertas.length === 0) return 0;
 
     const notificaciones: Notificacion[] = [];
-    for (const llamado of nuevos) {
+    for (const llamado of llamados) {
       for (const alerta of alertas) {
         if (!matcheaCriterios(llamado, alerta.criterios)) continue;
 
         notificaciones.push({
           alertaId: String(alerta._id),
           alertaNombre: alerta.nombre,
+          tipoAlerta: tipo,
           licitacionId: llamado.id ?? '',
           descripcion: llamado.descripcion ?? '',
           organismo: llamado.organismo?.nombreInciso ?? '',
@@ -58,21 +75,26 @@ export class AlertasMatcherService {
         });
         // canal log de la v1: visible en la consola del backend
         this.logger.log(
-          `🔔 Alerta "${alerta.nombre}" matcheó el llamado ${llamado.id}: ${llamado.descripcion}`,
+          `${icono} Alerta "${alerta.nombre}" matcheó el llamado ${llamado.id}: ${llamado.descripcion}`,
         );
       }
     }
 
+    // ordered:false → si una notificación choca con el índice único
+    // (alertaId+licitacionId ya notificado), se descarta ESA y las
+    // demás se insertan igual. El duplicado no es un error del motor.
+    // Se devuelve lo INSERTADO, no lo matcheado: en una re-corrida
+    // (cron diario de vencimientos, debug repetido) los duplicados
+    // no cuentan como notificaciones nuevas.
+    let insertadas = notificaciones.length;
     if (notificaciones.length > 0) {
-      // ordered:false → si una notificación choca con el índice único
-      // (alertaId+licitacionId ya notificado), se descarta ESA y las
-      // demás se insertan igual. El duplicado no es un error del motor.
       await this.notificacionModel
         .insertMany(notificaciones, { ordered: false })
         .catch((err) => {
           if (err?.code !== 11000) throw err;
+          insertadas = err.insertedDocs?.length ?? 0;
         });
     }
-    return notificaciones.length;
+    return insertadas;
   }
 }

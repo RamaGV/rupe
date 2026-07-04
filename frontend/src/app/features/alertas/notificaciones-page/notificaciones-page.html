@@ -30,7 +30,8 @@
         >
           <div class="min-w-0">
             <p class="text-xs text-gray-400 mb-1">
-              🔔 {{ n.alertaNombre }} · {{ n.creadaEn | slice:0:10 }}
+              {{ n.tipoAlerta === 'vencimiento' ? '⏰ cierra pronto' : '🔔' }}
+              {{ n.alertaNombre }} · {{ n.creadaEn | slice:0:10 }}
             </p>
             <a
               [routerLink]="['/licitaciones', n.licitacionId]"

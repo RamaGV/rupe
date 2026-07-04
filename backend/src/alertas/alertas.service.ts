@@ -18,7 +18,7 @@ export class AlertasService {
 
     const creada = await this.alertaModel.create({
       nombre: dto.nombre,
-      tipo: TipoAlerta.NUEVO_LLAMADO, // único motor implementado hoy
+      tipo: dto.tipo ?? TipoAlerta.NUEVO_LLAMADO,
       criterios: dto.criterios,
       activa: true,
     });

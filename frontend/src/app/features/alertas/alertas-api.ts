@@ -25,6 +25,7 @@ export interface NotificacionAlerta {
   id: string;
   alertaId: string;
   alertaNombre: string;
+  tipoAlerta?: string; // "nuevo_llamado" | "vencimiento" (ausente en notificaciones viejas)
   licitacionId: string; // navegable a /licitaciones/:id
   descripcion: string;
   organismo: string;
@@ -43,8 +44,8 @@ export interface BandejaNotificaciones {
 export class AlertasApi {
   private api = inject(Api);
 
-  crearAlerta(nombre: string, criterios: CriteriosAlerta): Observable<Alerta> {
-    return this.api.post<Alerta>('alertas', { nombre, criterios });
+  crearAlerta(nombre: string, criterios: CriteriosAlerta, tipo: string): Observable<Alerta> {
+    return this.api.post<Alerta>('alertas', { nombre, criterios, tipo });
   }
 
   listarAlertas(): Observable<Alerta[]> {

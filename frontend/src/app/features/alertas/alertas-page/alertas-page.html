@@ -9,6 +9,18 @@
   <!-- Crear alerta -->
   <div class="bg-white rounded-xl shadow p-6 mb-8">
     <h2 class="text-sm font-semibold text-gray-600 uppercase mb-4">Nueva alerta</h2>
+    <div class="mb-4">
+      <label class="block text-sm text-gray-600 mb-1">Avisame...</label>
+      <select
+        class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-300"
+        [value]="tipoAlerta()"
+        (change)="tipoAlerta.set($any($event.target).value)"
+      >
+        @for (t of tiposAlerta; track t.valor) {
+          <option [value]="t.valor">{{ t.etiqueta }}</option>
+        }
+      </select>
+    </div>
     <div class="grid gap-4 md:grid-cols-2">
       <div>
         <label class="block text-sm text-gray-600 mb-1">Nombre *</label>
@@ -80,6 +92,7 @@
         <thead class="bg-gray-100 text-gray-600 uppercase text-xs">
           <tr>
             <th class="px-4 py-3">Alerta</th>
+            <th class="px-4 py-3">Tipo</th>
             <th class="px-4 py-3">Criterios</th>
             <th class="px-4 py-3">Estado</th>
             <th class="px-4 py-3 text-right">Acciones</th>
@@ -89,6 +102,7 @@
           @for (alerta of alertas(); track alerta.id) {
             <tr class="border-t border-gray-100 hover:bg-gray-50">
               <td class="px-4 py-3 font-medium">{{ alerta.nombre }}</td>
+              <td class="px-4 py-3 text-gray-600 whitespace-nowrap">{{ etiquetaTipo(alerta.tipo) }}</td>
               <td class="px-4 py-3 text-gray-600">
                 @if (alerta.criterios.palabrasClave?.length) {
                   <span class="mr-2">🔤 {{ alerta.criterios.palabrasClave!.join(', ') }}</span>
@@ -125,7 +139,7 @@
             </tr>
           } @empty {
             <tr>
-              <td colspan="4" class="px-4 py-8 text-center text-gray-500">
+              <td colspan="5" class="px-4 py-8 text-center text-gray-500">
                 Sin alertas todavía — creá la primera arriba
               </td>
             </tr>

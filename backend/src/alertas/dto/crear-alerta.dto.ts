@@ -4,6 +4,7 @@ import {
   IsArray,
   IsBoolean,
   IsEnum,
+  IsIn,
   IsInt,
   IsNotEmpty,
   IsOptional,
@@ -11,6 +12,7 @@ import {
   ValidateNested,
 } from 'class-validator';
 import { TipoContratacion } from '../../shared/types/enums';
+import { TipoAlerta } from '../../shared/types';
 
 // Criterios que el motor SABE matchear (ver alerta.schema.ts: monto y
 // familias quedan fuera a propósito — el RSS no los trae).
@@ -37,9 +39,12 @@ export class CrearAlertaDto {
   @IsNotEmpty()
   nombre: string;
 
-  // El tipo NO se pide: hoy el único motor implementado es NUEVO_LLAMADO
-  // (vencimiento/adjudicación llegarán con su propio motor). Aceptarlo
-  // en el body sería dejar crear alertas que nunca disparan.
+  // Solo los tipos CON MOTOR: adjudicación existe en el dominio pero
+  // sus datos llegan por el dump OCDS anual — aceptarla sería dejar
+  // crear alertas que disparan un año tarde.
+  @IsOptional()
+  @IsIn([TipoAlerta.NUEVO_LLAMADO, TipoAlerta.VENCIMIENTO])
+  tipo?: TipoAlerta;
 
   @ValidateNested()
   @Type(() => CriteriosAlertaDto)

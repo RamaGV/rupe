@@ -7,6 +7,7 @@ import { AlertasModule } from '../alertas/alertas.module';
 import { Licitacion, LicitacionSchema } from './schemas/licitacion.schema';
 import { RssIngestService } from './rss-ingest.service';
 import { RssSchedulerService } from './rss-scheduler.service';
+import { VencimientosSchedulerService } from './vencimientos-scheduler.service';
 import { LicitacionesController } from './licitaciones.controller';
 import { LicitacionesService } from './licitaciones.service';
 
@@ -32,7 +33,12 @@ import { LicitacionesService } from './licitaciones.service';
     AlertasModule,
   ],
   controllers: [LicitacionesController],
-  providers: [RssIngestService, RssSchedulerService, LicitacionesService],
+  providers: [
+    RssIngestService,
+    RssSchedulerService,
+    VencimientosSchedulerService,
+    LicitacionesService,
+  ],
   // Exportamos el service para que otros módulos (ej: Alertas, más
   // adelante) puedan consultar licitaciones sin duplicar lógica.
   exports: [LicitacionesService],

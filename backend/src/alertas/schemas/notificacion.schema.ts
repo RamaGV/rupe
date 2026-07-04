@@ -1,6 +1,7 @@
 // backend/src/alertas/schemas/notificacion.schema.ts
 import { Schema, SchemaFactory, Prop } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
+import { TipoAlerta } from '../../shared/types';
 
 export type NotificacionDocument = Notificacion & Document;
 
@@ -16,6 +17,12 @@ export class Notificacion {
 
   @Prop({ required: true })
   alertaNombre: string;
+
+  // Snapshot del tipo de alerta que la generó: la bandeja distingue
+  // "salió algo nuevo" (🔔) de "esto que te interesa cierra pronto" (⏰).
+  // default para los docs anteriores a la existencia del campo.
+  @Prop({ type: String, enum: TipoAlerta, required: true, default: TipoAlerta.NUEVO_LLAMADO })
+  tipoAlerta: TipoAlerta;
 
   // El id externo del llamado (el de ARCE): alcanza para navegar al
   // detalle en el frontend (/licitaciones/:id)
