@@ -1,5 +1,5 @@
 <!-- src/app/features/licitaciones/licitacion-detail/licitacion-detail.html -->
-<div class="p-8 max-w-5xl mx-auto">
+<div class="p-4 sm:p-8 max-w-5xl mx-auto">
   <a routerLink="/licitaciones" class="text-sm text-blue-600 hover:underline">← Volver al listado</a>
 
   @if (cargando()) {
@@ -21,10 +21,20 @@
               <span class="text-xs text-gray-400">(inciso {{ lic.organismo.inciso }})</span>
             }
           </p>
+          @if (lic.organismo.unidadEjecutora && lic.organismo.unidadEjecutora !== lic.organismo.nombreInciso) {
+            <p class="text-sm text-gray-400">{{ lic.organismo.unidadEjecutora }}</p>
+          }
         </div>
-        <span class="px-3 py-1 rounded-full text-sm font-medium" [class]="claseEstado(lic.estado)">
-          {{ lic.estado }}
-        </span>
+        <div class="flex flex-col items-end gap-2 shrink-0">
+          <span class="px-3 py-1 rounded-full text-sm font-medium" [class]="claseEstado(lic.estado)">
+            {{ lic.estado }}
+          </span>
+          @if (lic.aperturaElectronica) {
+            <span class="px-2 py-0.5 rounded-full text-xs bg-indigo-100 text-indigo-700">
+              apertura electrónica
+            </span>
+          }
+        </div>
       </div>
 
       <p class="text-gray-700 mt-4">{{ lic.descripcion }}</p>
@@ -37,6 +47,11 @@
         <div>
           <p class="text-gray-400 text-xs uppercase">Recepción de ofertas</p>
           <p>{{ (lic.fechaRecepcionOfertas | date: 'dd/MM/yyyy HH:mm') ?? '—' }}</p>
+          @if (lic.estado === 'vigente' && lic.fechaRecepcionOfertas) {
+            <p class="text-xs font-medium text-amber-600">
+              cierra {{ lic.fechaRecepcionOfertas | fechaRelativa }}
+            </p>
+          }
         </div>
         <div>
           <p class="text-gray-400 text-xs uppercase">Portal ARCE</p>
@@ -86,7 +101,8 @@
     @if (lic.items.length > 0) {
       <div class="bg-white rounded-xl shadow overflow-hidden mt-4">
         <h2 class="font-bold text-gray-800 px-6 pt-5 pb-2">Items ({{ lic.items.length }})</h2>
-        <table class="w-full text-sm text-left">
+        <div class="overflow-x-auto">
+        <table class="w-full min-w-[640px] text-sm text-left">
           <thead class="bg-gray-50 text-gray-500 uppercase text-xs">
             <tr>
               <th class="px-6 py-2">#</th>
@@ -113,6 +129,7 @@
             }
           </tbody>
         </table>
+        </div>
       </div>
     }
 

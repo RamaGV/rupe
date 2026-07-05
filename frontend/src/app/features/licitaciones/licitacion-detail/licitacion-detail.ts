@@ -6,11 +6,12 @@ import { RouterLink } from '@angular/router';
 import { LicitacionesApi, Licitacion } from '../licitaciones-api';
 
 import { Skeleton } from '../../../core/ui/skeleton';
+import { FechaRelativaPipe } from '../../../core/pipes/fecha-relativa.pipe';
 
 @Component({
   selector: 'app-licitacion-detail',
   standalone: true,
-  imports: [DatePipe, DecimalPipe, RouterLink, MontoPipe, Skeleton],
+  imports: [DatePipe, DecimalPipe, RouterLink, MontoPipe, Skeleton, FechaRelativaPipe],
   templateUrl: './licitacion-detail.html',
   styleUrl: './licitacion-detail.css',
 })
