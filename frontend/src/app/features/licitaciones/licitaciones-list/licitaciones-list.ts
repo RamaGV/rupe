@@ -15,10 +15,12 @@ import {
 } from '../licitaciones-api';
 import { OrganismosApi, OrganismoCodiguera } from '../../../core/organismos-api';
 
+import { Skeleton } from '../../../core/ui/skeleton';
+
 @Component({
   selector: 'app-licitaciones-list',
   standalone: true,
-  imports: [DatePipe, RouterLink, FechaRelativaPipe],
+  imports: [DatePipe, RouterLink, FechaRelativaPipe, Skeleton],
   templateUrl: './licitaciones-list.html',
   styleUrl: './licitaciones-list.css',
 })

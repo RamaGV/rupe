@@ -4,13 +4,14 @@ import { RouterLink } from '@angular/router';
 import { SlicePipe } from '@angular/common';
 import { DashboardApi, Estadisticas } from './dashboard-api';
 import { MontoPipe } from '../../core/pipes/monto.pipe';
+import { Skeleton } from '../../core/ui/skeleton';
 
 const ANIO_ACTUAL = new Date().getFullYear();
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [RouterLink, SlicePipe, MontoPipe],
+  imports: [RouterLink, SlicePipe, MontoPipe, Skeleton],
   templateUrl: './dashboard.html',
 })
 export class Dashboard implements OnInit {

@@ -1,5 +1,5 @@
 <!-- src/app/features/alertas/notificaciones-page/notificaciones-page.html -->
-<div class="p-8">
+<div class="p-4 sm:p-8">
   <div class="flex items-center justify-between mb-6">
     <h1 class="text-2xl font-bold text-gray-800">
       Notificaciones
@@ -20,7 +20,7 @@
   }
 
   @if (cargando()) {
-    <p class="text-gray-500">Cargando...</p>
+    <app-skeleton tipo="lineas" [filas]="6" />
   } @else if (bandeja(); as b) {
     <div class="space-y-3">
       @for (n of b.datos; track n.id) {

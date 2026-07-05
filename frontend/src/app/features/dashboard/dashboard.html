@@ -1,5 +1,5 @@
 <!-- src/app/features/dashboard/dashboard.html -->
-<div class="p-8">
+<div class="p-4 sm:p-8">
   <div class="flex items-start justify-between gap-4 flex-wrap mb-6">
     <div>
       <h1 class="text-2xl font-bold text-gray-800 mb-1">Boletín de Contrataciones del Estado</h1>
@@ -24,7 +24,7 @@
   }
 
   @if (cargando()) {
-    <p class="text-gray-500">Cargando...</p>
+    <app-skeleton tipo="tarjetas" [filas]="3" />
   } @else if (stats(); as s) {
     <!-- Números gordos -->
     <div class="grid gap-4 sm:grid-cols-3 mb-8">

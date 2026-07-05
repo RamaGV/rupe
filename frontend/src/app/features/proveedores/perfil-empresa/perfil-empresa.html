@@ -3,7 +3,7 @@
   <a routerLink="/proveedores" class="text-sm text-blue-600 hover:underline">← Volver a proveedores</a>
 
   @if (cargando()) {
-    <p class="text-gray-500 mt-4">Cargando...</p>
+    <app-skeleton tipo="lineas" [filas]="8" />
   } @else if (error(); as err) {
     <p class="text-red-600 bg-red-50 rounded-lg p-4 mt-4">{{ err }}</p>
   } @else if (perfil(); as p) {

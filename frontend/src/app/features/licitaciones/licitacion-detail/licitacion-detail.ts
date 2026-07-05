@@ -5,10 +5,12 @@ import { MontoPipe } from '../../../core/pipes/monto.pipe';
 import { RouterLink } from '@angular/router';
 import { LicitacionesApi, Licitacion } from '../licitaciones-api';
 
+import { Skeleton } from '../../../core/ui/skeleton';
+
 @Component({
   selector: 'app-licitacion-detail',
   standalone: true,
-  imports: [DatePipe, DecimalPipe, RouterLink, MontoPipe],
+  imports: [DatePipe, DecimalPipe, RouterLink, MontoPipe, Skeleton],
   templateUrl: './licitacion-detail.html',
   styleUrl: './licitacion-detail.css',
 })

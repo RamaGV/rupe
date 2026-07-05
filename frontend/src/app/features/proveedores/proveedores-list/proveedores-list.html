@@ -1,5 +1,5 @@
 <!-- src/app/features/proveedores/proveedores-list/proveedores-list.html -->
-<div class="p-8">
+<div class="p-4 sm:p-8">
   <div class="flex items-center justify-between mb-6 gap-4 flex-wrap">
     <h1 class="text-2xl font-bold text-gray-800">
       Proveedores registrados en RUPE
@@ -20,10 +20,11 @@
   }
 
   @if (cargando()) {
-    <p class="text-gray-500">Cargando...</p>
+    <app-skeleton tipo="tabla" [filas]="8" />
   } @else if (pagina(); as p) {
     <div class="bg-white rounded-xl shadow overflow-hidden">
-      <table class="w-full text-sm text-left">
+      <div class="overflow-x-auto">
+      <table class="w-full min-w-[640px] text-sm text-left">
         <thead class="bg-gray-100 text-gray-600 uppercase text-xs">
           <tr>
             <th class="px-4 py-3">Documento</th>
@@ -62,6 +63,7 @@
           }
         </tbody>
       </table>
+      </div>
 
       <div class="flex items-center justify-between border-t border-gray-100 px-4 py-3">
         <span class="text-sm text-gray-500">

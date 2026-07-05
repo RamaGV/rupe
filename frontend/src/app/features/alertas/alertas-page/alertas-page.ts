@@ -4,10 +4,12 @@ import { AlertasApi, Alerta } from '../alertas-api';
 import { TIPOS_CONTRATACION } from '../../licitaciones/licitaciones-api';
 import { OrganismosApi, OrganismoCodiguera } from '../../../core/organismos-api';
 
+import { Skeleton } from '../../../core/ui/skeleton';
+
 @Component({
   selector: 'app-alertas-page',
   standalone: true,
-  imports: [],
+  imports: [Skeleton],
   templateUrl: './alertas-page.html',
 })
 export class AlertasPage implements OnInit {

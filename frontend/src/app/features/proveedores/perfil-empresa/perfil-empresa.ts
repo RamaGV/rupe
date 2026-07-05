@@ -5,10 +5,12 @@ import { MontoPipe } from '../../../core/pipes/monto.pipe';
 import { RouterLink } from '@angular/router';
 import { ProveedoresApi, PerfilEmpresa } from '../proveedores-api';
 
+import { Skeleton } from '../../../core/ui/skeleton';
+
 @Component({
   selector: 'app-perfil-empresa',
   standalone: true,
-  imports: [DatePipe, RouterLink, MontoPipe],
+  imports: [DatePipe, RouterLink, MontoPipe, Skeleton],
   templateUrl: './perfil-empresa.html',
   styleUrl: './perfil-empresa.css',
 })

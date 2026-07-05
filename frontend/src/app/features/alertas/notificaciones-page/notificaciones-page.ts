@@ -4,10 +4,12 @@ import { SlicePipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { AlertasApi, BandejaNotificaciones } from '../alertas-api';
 
+import { Skeleton } from '../../../core/ui/skeleton';
+
 @Component({
   selector: 'app-notificaciones-page',
   standalone: true,
-  imports: [RouterLink, SlicePipe],
+  imports: [RouterLink, SlicePipe, Skeleton],
   templateUrl: './notificaciones-page.html',
 })
 export class NotificacionesPage implements OnInit {

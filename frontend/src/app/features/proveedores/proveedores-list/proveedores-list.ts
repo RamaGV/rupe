@@ -5,10 +5,12 @@ import { RouterLink } from '@angular/router';
 import { Subject, debounceTime, distinctUntilChanged, switchMap, catchError, of } from 'rxjs';
 import { ProveedoresApi, PaginaProveedores } from '../proveedores-api';
 
+import { Skeleton } from '../../../core/ui/skeleton';
+
 @Component({
   selector: 'app-proveedores-list',
   standalone: true,
-  imports: [RouterLink],
+  imports: [RouterLink, Skeleton],
   templateUrl: './proveedores-list.html',
   styleUrl: './proveedores-list.css',
 })

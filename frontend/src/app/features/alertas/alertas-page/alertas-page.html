@@ -1,5 +1,5 @@
 <!-- src/app/features/alertas/alertas-page/alertas-page.html -->
-<div class="p-8">
+<div class="p-4 sm:p-8">
   <h1 class="text-2xl font-bold text-gray-800 mb-6">Mis alertas</h1>
 
   @if (error(); as err) {
@@ -88,10 +88,11 @@
 
   <!-- Lista de alertas -->
   @if (cargando()) {
-    <p class="text-gray-500">Cargando...</p>
+    <app-skeleton tipo="tabla" [filas]="4" />
   } @else {
     <div class="bg-white rounded-xl shadow overflow-hidden">
-      <table class="w-full text-sm text-left">
+      <div class="overflow-x-auto">
+      <table class="w-full min-w-[640px] text-sm text-left">
         <thead class="bg-gray-100 text-gray-600 uppercase text-xs">
           <tr>
             <th class="px-4 py-3">Alerta</th>
@@ -149,6 +150,7 @@
           }
         </tbody>
       </table>
+      </div>
     </div>
   }
 </div>
