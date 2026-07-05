@@ -40,7 +40,14 @@ export class App implements OnInit {
   ngOnInit(): void {
     this.apiService.get<{ status: string }>('health').subscribe({
       next: (res: { status: string }) => this.healthStatus.set(res.status),
-      error: () => this.healthStatus.set('error conectando al backend'),
+      // el health degradado llega como 503 CON body: distinguimos
+      // "backend caído" de "backend vivo pero sin Mongo"
+      error: (err) =>
+        this.healthStatus.set(
+          err?.error?.status === 'degradado'
+            ? 'sin conexión a Mongo'
+            : 'error conectando al backend',
+        ),
     });
   }
 }
