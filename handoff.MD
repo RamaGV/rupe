@@ -259,8 +259,11 @@ frontend/src/app/
 - [x] `GET /organismos` + selector por nombre en filtros de licitaciones y
       form de alertas. OrganismosApi en core/ con shareReplay(1) (referencia
       compartida, una request por sesión). La tabla de alertas muestra nombres.
-- [ ] Estados de carga (skeletons) y responsive
-- [ ] Detalle de licitación: link al portal (urlOrigen), navegación mejorada
+- [x] Skeletons (componente core/ui/skeleton con variantes tabla/tarjetas/
+      lineas) + responsive (tablas con overflow-x-auto + min-width, navbar
+      flex-wrap, paddings p-4 sm:p-8)
+- [ ] Detalle de licitación: link al portal (urlOrigen), navegación mejorada,
+      overflow-x-auto en su tabla de items (quedó pendiente de este pase)
 
 ### Bloque 5b — Boletín por email (PLANEADO; completa el MVP, diseño decidido)
 El autor quiere multicuenta a futuro: difundir compras nuevas y avisos de
