@@ -2,6 +2,7 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { AlertasApi, Alerta } from '../alertas-api';
 import { TIPOS_CONTRATACION } from '../../licitaciones/licitaciones-api';
+import { OrganismosApi, OrganismoCodiguera } from '../../../core/organismos-api';
 
 @Component({
   selector: 'app-alertas-page',
@@ -11,6 +12,7 @@ import { TIPOS_CONTRATACION } from '../../licitaciones/licitaciones-api';
 })
 export class AlertasPage implements OnInit {
   private alertasApi = inject(AlertasApi);
+  private organismosApi = inject(OrganismosApi);
 
   alertas = signal<Alerta[]>([]);
   cargando = signal(true);
@@ -21,11 +23,12 @@ export class AlertasPage implements OnInit {
   // criterios (strings con comas → arrays) vive en crear().
   nombre = signal('');
   palabrasClave = signal('');
-  incisos = signal('');
+  incisoSeleccionado = signal(''); // código de inciso elegido del selector
   tipoSeleccionado = signal('');
   tipoAlerta = signal('nuevo_llamado');
 
   tiposContratacion = TIPOS_CONTRATACION;
+  organismos = signal<OrganismoCodiguera[]>([]);
 
   // Espejo de los tipos CON MOTOR en el backend (adjudicación no se
   // ofrece: sus datos llegan por el dump anual, avisaría un año tarde)
@@ -40,6 +43,10 @@ export class AlertasPage implements OnInit {
 
   ngOnInit(): void {
     this.cargar();
+    this.organismosApi.getOrganismos().subscribe({
+      next: (organismos) => this.organismos.set(organismos),
+      error: () => {}, // sin codiguera solo se pierde el selector
+    });
   }
 
   cargar(): void {
@@ -57,11 +64,12 @@ export class AlertasPage implements OnInit {
   }
 
   crear(): void {
-    // "terminal, obra" → ["terminal", "obra"]; "98, 83" → [98, 83]
+    // "terminal, obra" → ["terminal", "obra"]
     const palabrasClave = this.aLista(this.palabrasClave());
-    const incisos = this.aLista(this.incisos())
-      .map(Number)
-      .filter((n) => Number.isInteger(n) && n > 0);
+    // el criterio sigue siendo number[] (la API acepta varios); la UI
+    // ofrece UNO por simplicidad — el caso real dominante
+    const inciso = parseInt(this.incisoSeleccionado(), 10);
+    const incisos = Number.isInteger(inciso) && inciso > 0 ? [inciso] : [];
     const tiposContratacion = this.tipoSeleccionado() ? [this.tipoSeleccionado()] : [];
 
     this.guardando.set(true);
@@ -79,7 +87,7 @@ export class AlertasPage implements OnInit {
         next: () => {
           this.nombre.set('');
           this.palabrasClave.set('');
-          this.incisos.set('');
+          this.incisoSeleccionado.set('');
           this.tipoSeleccionado.set('');
           this.tipoAlerta.set('nuevo_llamado');
           this.error.set(null);
@@ -113,9 +121,15 @@ export class AlertasPage implements OnInit {
     return (
       this.nombre().trim().length > 0 &&
       (this.palabrasClave().trim().length > 0 ||
-        this.incisos().trim().length > 0 ||
+        this.incisoSeleccionado().length > 0 ||
         this.tipoSeleccionado().length > 0)
     );
+  }
+
+  // para la tabla: el criterio guarda códigos, el ojo quiere nombres
+  nombresIncisos(codigos: number[]): string {
+    const porCodigo = new Map(this.organismos().map((o) => [o.inciso, o.nombre]));
+    return codigos.map((c) => porCodigo.get(c) ?? `inciso ${c}`).join(', ');
   }
 
   private aLista(texto: string): string[] {

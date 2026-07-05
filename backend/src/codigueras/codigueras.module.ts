@@ -6,6 +6,7 @@ import {
   OrganismoCodigueraSchema,
 } from './schemas/organismo-codiguera.schema';
 import { CodiguerasService } from './codigueras.service';
+import { CodiguerasController } from './codigueras.controller';
 
 // Solo el lookup vive en el grafo de la app. CodiguerasIngestService
 // se ensambla únicamente en el script batch (mismo patrón que
@@ -16,6 +17,7 @@ import { CodiguerasService } from './codigueras.service';
       { name: OrganismoCodiguera.name, schema: OrganismoCodigueraSchema },
     ]),
   ],
+  controllers: [CodiguerasController],
   providers: [CodiguerasService],
   exports: [CodiguerasService],
 })

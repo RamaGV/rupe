@@ -34,6 +34,15 @@
       }
     </select>
     <select
+      class="border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white max-w-64"
+      (change)="onFiltro('inciso', $any($event.target).value)"
+    >
+      <option value="">Todos los organismos</option>
+      @for (o of organismos(); track o.inciso) {
+        <option [value]="o.inciso">{{ o.nombre }}</option>
+      }
+    </select>
+    <select
       class="border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white"
       (change)="onFiltro('anio', $any($event.target).value)"
     >

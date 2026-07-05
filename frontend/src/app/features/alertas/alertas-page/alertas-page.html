@@ -46,14 +46,17 @@
         </p>
       </div>
       <div>
-        <label class="block text-sm text-gray-600 mb-1">Códigos de inciso (separados por coma)</label>
-        <input
-          type="text"
-          placeholder="98, 83 (98 = Int. de Montevideo)"
-          class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
-          [value]="incisos()"
-          (input)="incisos.set($any($event.target).value)"
-        />
+        <label class="block text-sm text-gray-600 mb-1">Organismo</label>
+        <select
+          class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-300"
+          [value]="incisoSeleccionado()"
+          (change)="incisoSeleccionado.set($any($event.target).value)"
+        >
+          <option value="">Cualquiera</option>
+          @for (o of organismos(); track o.inciso) {
+            <option [value]="o.inciso">{{ o.nombre }}</option>
+          }
+        </select>
       </div>
       <div>
         <label class="block text-sm text-gray-600 mb-1">Tipo de contratación</label>
@@ -108,7 +111,7 @@
                   <span class="mr-2">🔤 {{ alerta.criterios.palabrasClave!.join(', ') }}</span>
                 }
                 @if (alerta.criterios.incisos?.length) {
-                  <span class="mr-2">🏛 inciso {{ alerta.criterios.incisos!.join(', ') }}</span>
+                  <span class="mr-2">🏛 {{ nombresIncisos(alerta.criterios.incisos!) }}</span>
                 }
                 @if (alerta.criterios.tiposContratacion?.length) {
                   <span>📄 {{ alerta.criterios.tiposContratacion!.join(', ') }}</span>

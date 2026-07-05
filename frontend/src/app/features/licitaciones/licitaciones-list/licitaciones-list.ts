@@ -13,6 +13,7 @@ import {
   TIPOS_CONTRATACION,
   ORDENES,
 } from '../licitaciones-api';
+import { OrganismosApi, OrganismoCodiguera } from '../../../core/organismos-api';
 
 @Component({
   selector: 'app-licitaciones-list',
@@ -23,12 +24,14 @@ import {
 })
 export class LicitacionesList implements OnInit {
   private licitacionesApi = inject(LicitacionesApi);
+  private organismosApi = inject(OrganismosApi);
 
   // opciones para los <select> del template
   readonly estados = ESTADOS_LLAMADO;
   readonly tipos = TIPOS_CONTRATACION;
   readonly ordenes = ORDENES;
   readonly anios = [2026, 2025, 2024, 2023, 2022];
+  organismos = signal<OrganismoCodiguera[]>([]);
 
   pagina = signal<PaginaLicitaciones | null>(null);
   cargando = signal(true);
@@ -70,15 +73,20 @@ export class LicitacionesList implements OnInit {
 
   ngOnInit(): void {
     this.cargar(1);
+    // referencia para el selector; si falla, el resto de la página vive igual
+    this.organismosApi.getOrganismos().subscribe({
+      next: (organismos) => this.organismos.set(organismos),
+      error: () => {}, // sin codiguera solo se pierde el selector
+    });
   }
 
   onBuscar(valor: string): void {
     this.busqueda$.next(valor);
   }
 
-  onFiltro(campo: 'estado' | 'tipo' | 'orden' | 'anio', valor: string): void {
-    if (campo === 'anio') {
-      this.filtros.anio = valor ? parseInt(valor, 10) : undefined;
+  onFiltro(campo: 'estado' | 'tipo' | 'orden' | 'anio' | 'inciso', valor: string): void {
+    if (campo === 'anio' || campo === 'inciso') {
+      this.filtros[campo] = valor ? parseInt(valor, 10) : undefined;
     } else {
       this.filtros[campo] = (valor || undefined) as never;
     }

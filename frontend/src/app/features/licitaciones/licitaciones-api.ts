@@ -77,6 +77,7 @@ export interface FiltrosLicitaciones {
   estado?: string;
   tipo?: string;
   anio?: number;
+  inciso?: number;
   orden?: 'recientes' | 'cierre' | 'monto';
 }
 

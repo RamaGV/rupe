@@ -51,6 +51,15 @@ export class CodiguerasService implements OnModuleInit {
     }
   }
 
+  // La codiguera para la UI: código + nombre oficial, ordenada por nombre
+  // (así el <select> se lee como una lista, no como un presupuesto).
+  async listar(): Promise<{ inciso: number; nombre: string }[]> {
+    return this.organismoModel
+      .find({}, { _id: 0, inciso: 1, nombre: 1 })
+      .sort({ nombre: 1 })
+      .lean();
+  }
+
   // Devuelve 0 si no hay match — el mismo "no sé" que ya usa el dominio.
   // Es un resultado legítimo: las UCC/UACM (compras centralizadas de ASSE,
   // ARCE...) aparecen en el RSS pero NO son un inciso (9 de 929 en la
