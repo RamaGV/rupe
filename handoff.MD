@@ -248,7 +248,24 @@ frontend/src/app/
 
 ## 6. PENDIENTES (en orden de valor sugerido)
 
-### EN CURSO — Bloque Frontend: pulir la experiencia con los datos ya cargados
+### EN CURSO — Bloque 6: calidad e infra
+- [x] Health check real: ping a Mongo con timeout 2s, 200/503 con body
+      (contrato de load balancers y Docker healthcheck). La navbar distingue
+      "backend caído" de "sin conexión a Mongo".
+- [x] e2e: suite completa (backend/test/app.e2e-spec.ts, 14 tests) contra
+      mongodb-memory-server — app entera con la config de main.ts, único
+      override: RssSchedulerService (saldría a la red). Fija los contratos
+      ganados: vigente derivado, campos internos ocultos, shape de error,
+      perfil cruzado, alertas sin criterios = 400. `npm run test:e2e`.
+- [ ] CI (GitHub Actions): jest + test:e2e + ng test + tsc en cada push.
+      BLOQUEADO por el autor: el repo no tiene remote — crear repo en GitHub
+      y pushear (acción del autor, con sus credenciales, en su consola)
+- [ ] Dockerizar backend + frontend (el healthcheck ya habla su idioma)
+- [ ] Atlas para prod
+- [ ] Extraer shared/types a paquete compartido
+- [ ] Ingestar más años OCDS (2024, 2023...) — lo puede hacer el autor sin sesión
+
+### HECHO — Bloque Frontend: pulido con los datos ya cargados
 - [x] Dashboard/home en `/`: GET /estadisticas?anio (default "este año", el
       marco de referencia del autor; $match antes del $facet). Dato conocido:
       el año corriente no tiene adjudicaciones hasta su dump (enero siguiente)
@@ -262,10 +279,11 @@ frontend/src/app/
 - [x] Skeletons (componente core/ui/skeleton con variantes tabla/tarjetas/
       lineas) + responsive (tablas con overflow-x-auto + min-width, navbar
       flex-wrap, paddings p-4 sm:p-8)
-- [ ] Detalle de licitación: link al portal (urlOrigen), navegación mejorada,
-      overflow-x-auto en su tabla de items (quedó pendiente de este pase)
+- [x] Detalle de licitación: fecha relativa de cierre, unidad ejecutora,
+      chip de apertura electrónica, items con overflow-x-auto, padding responsive
 
-### Bloque 5b — Boletín por email (PLANEADO; completa el MVP, diseño decidido)
+### Bloque 5b — Boletín por email (POST-MVP por decisión del autor 2026-07-04;
+### el diseño queda decidido para cuando llegue la API key)
 El autor quiere multicuenta a futuro: difundir compras nuevas y avisos de
 vencimiento a suscriptores. Decisiones YA tomadas (sesión 2026-07-04):
 - **Puerto EmailSender** (Ports & Adapters, como ProveedoresRepository):
