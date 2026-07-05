@@ -1,13 +1,14 @@
 // src/app/features/licitaciones/licitacion-detail/licitacion-detail.ts
 import { Component, OnInit, inject, input, signal } from '@angular/core';
 import { DatePipe, DecimalPipe } from '@angular/common';
+import { MontoPipe } from '../../../core/pipes/monto.pipe';
 import { RouterLink } from '@angular/router';
 import { LicitacionesApi, Licitacion } from '../licitaciones-api';
 
 @Component({
   selector: 'app-licitacion-detail',
   standalone: true,
-  imports: [DatePipe, DecimalPipe, RouterLink],
+  imports: [DatePipe, DecimalPipe, RouterLink, MontoPipe],
   templateUrl: './licitacion-detail.html',
   styleUrl: './licitacion-detail.css',
 })

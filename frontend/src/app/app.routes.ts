@@ -6,8 +6,11 @@ import { LicitacionDetail } from './features/licitaciones/licitacion-detail/lici
 import { PerfilEmpresaView } from './features/proveedores/perfil-empresa/perfil-empresa';
 import { AlertasPage } from './features/alertas/alertas-page/alertas-page';
 import { NotificacionesPage } from './features/alertas/notificaciones-page/notificaciones-page';
+import { Dashboard } from './features/dashboard/dashboard';
 
 export const routes: Routes = [
+  // la portada: números generales del boletín (antes redirigía a la lista)
+  { path: '', component: Dashboard, pathMatch: 'full' },
   { path: 'licitaciones', component: LicitacionesList },
   // :id se enlaza al input "id" del componente (withComponentInputBinding)
   { path: 'licitaciones/:id', component: LicitacionDetail },
@@ -15,5 +18,4 @@ export const routes: Routes = [
   { path: 'proveedores/:documento', component: PerfilEmpresaView },
   { path: 'alertas', component: AlertasPage },
   { path: 'notificaciones', component: NotificacionesPage },
-  { path: '', redirectTo: 'licitaciones', pathMatch: 'full' },
 ];

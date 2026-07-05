@@ -48,7 +48,7 @@
         }
         @for (m of p.montosPorMoneda; track m.moneda) {
           <p class="mt-1">
-            <span class="text-lg font-bold text-gray-800">{{ m.total | number: '1.0-0' }}</span>
+            <span class="text-lg font-bold text-gray-800">{{ m.total | monto }}</span>
             <span class="text-xs text-gray-500"> {{ m.moneda }} ({{ m.cantidad }})</span>
           </p>
         }
@@ -94,7 +94,7 @@
                 <td class="px-6 py-2 max-w-sm"><span class="line-clamp-1">{{ adj.descripcion }}</span></td>
                 <td class="px-6 py-2 text-right whitespace-nowrap">
                   @if (adj.montoTotal != null) {
-                    {{ adj.montoTotal | number: '1.0-0' }}
+                    {{ adj.montoTotal | monto: adj.moneda }}
                     <span class="text-xs text-gray-400">{{ adj.moneda }}</span>
                   } @else { — }
                 </td>

@@ -1,6 +1,7 @@
 // src/app/features/licitaciones/licitaciones-list/licitaciones-list.ts
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { DatePipe } from '@angular/common';
+import { FechaRelativaPipe } from '../../../core/pipes/fecha-relativa.pipe';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
 import { Subject, debounceTime, distinctUntilChanged, switchMap, catchError, of } from 'rxjs';
@@ -16,7 +17,7 @@ import {
 @Component({
   selector: 'app-licitaciones-list',
   standalone: true,
-  imports: [DatePipe, RouterLink],
+  imports: [DatePipe, RouterLink, FechaRelativaPipe],
   templateUrl: './licitaciones-list.html',
   styleUrl: './licitaciones-list.css',
 })

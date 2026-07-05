@@ -89,7 +89,12 @@
                 <span class="line-clamp-2">{{ lic.descripcion }}</span>
               </td>
               <td class="px-4 py-3 whitespace-nowrap">
-                {{ lic.fechaRecepcionOfertas | date: 'dd/MM/yyyy HH:mm' }}
+                <div>{{ lic.fechaRecepcionOfertas | date: 'dd/MM/yyyy HH:mm' }}</div>
+                @if (lic.estado === 'vigente' && lic.fechaRecepcionOfertas) {
+                  <div class="text-xs font-medium text-amber-600">
+                    cierra {{ lic.fechaRecepcionOfertas | fechaRelativa }}
+                  </div>
+                }
               </td>
               <td class="px-4 py-3">
                 <span class="px-2 py-1 rounded-full text-xs font-medium" [class]="claseEstado(lic.estado)">

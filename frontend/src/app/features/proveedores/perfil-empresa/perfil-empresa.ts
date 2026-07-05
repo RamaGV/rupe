@@ -1,13 +1,14 @@
 // src/app/features/proveedores/perfil-empresa/perfil-empresa.ts
 import { Component, OnInit, inject, input, signal } from '@angular/core';
-import { DatePipe, DecimalPipe } from '@angular/common';
+import { DatePipe } from '@angular/common';
+import { MontoPipe } from '../../../core/pipes/monto.pipe';
 import { RouterLink } from '@angular/router';
 import { ProveedoresApi, PerfilEmpresa } from '../proveedores-api';
 
 @Component({
   selector: 'app-perfil-empresa',
   standalone: true,
-  imports: [DatePipe, DecimalPipe, RouterLink],
+  imports: [DatePipe, RouterLink, MontoPipe],
   templateUrl: './perfil-empresa.html',
   styleUrl: './perfil-empresa.css',
 })
