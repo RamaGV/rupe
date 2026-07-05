@@ -7,6 +7,7 @@ import { DatabaseModule } from './database/database.module';
 import { LicitacionesModule } from './licitaciones/licitaciones.module';
 import { ProveedoresModule } from './proveedores/proveedores.module';
 import { AlertasModule } from './alertas/alertas.module';
+import { EstadisticasModule } from './estadisticas/estadisticas.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { AlertasModule } from './alertas/alertas.module';
     ProveedoresModule,
     LicitacionesModule,
     AlertasModule,
+    EstadisticasModule,
   ],
   controllers: [AppController],
   providers: [AppService],

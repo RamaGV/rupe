@@ -11,5 +11,7 @@ import { ProveedoresService } from './proveedores.service';
   imports: [IngestaModule, LicitacionesModule],
   controllers: [ProveedoresController],
   providers: [ProveedoresService],
+  // exportado para EstadisticasModule (el dashboard cruza dominios)
+  exports: [ProveedoresService],
 })
 export class ProveedoresModule {}

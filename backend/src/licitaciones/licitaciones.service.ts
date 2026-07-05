@@ -83,6 +83,86 @@ export class LicitacionesService {
     return this.licitacionModel.findOne({ id }, PROYECCION_PUBLICA).lean();
   }
 
+  // Números generales para el dashboard. Mismo patrón $facet que el
+  // perfil de empresa: todas las vistas del resumen en UNA pasada.
+  //
+  // anio acota TODO el resumen a ese año (sin anio = histórico completo).
+  // OJO dato conocido: el año corriente no tiene adjudicaciones hasta que
+  // salga su dump OCDS (enero siguiente) — montosPorMoneda vacío para el
+  // año actual es correcto, no un bug.
+  async estadisticasGenerales(anio?: number) {
+    const ahora = new Date();
+    const [r] = await this.licitacionModel.aggregate([
+      // $match ANTES del $facet: todas las facetas heredan el recorte
+      ...(anio ? [{ $match: { anio } }] : []),
+      {
+        $facet: {
+          total: [{ $count: 'n' }],
+          // misma derivación que buscar(): vigente = se puede ofertar HOY
+          vigentes: [
+            {
+              $match: {
+                estado: 'vigente',
+                $or: [
+                  { fechaRecepcionOfertas: { $gte: ahora } },
+                  { fechaRecepcionOfertas: null },
+                ],
+              },
+            },
+            { $count: 'n' },
+          ],
+          // total adjudicado POR MONEDA sobre todo lo cargado (regla 4:
+          // jamás sumar monedas distintas en un solo número)
+          montosPorMoneda: [
+            { $match: { 'adjudicacion.montoTotal': { $gt: 0 } } },
+            {
+              $group: {
+                _id: { $ifNull: ['$adjudicacion.moneda', 'sin moneda'] },
+                total: { $sum: '$adjudicacion.montoTotal' },
+                cantidad: { $sum: 1 },
+              },
+            },
+            { $sort: { total: -1 } },
+            { $project: { _id: 0, moneda: '$_id', total: 1, cantidad: 1 } },
+          ],
+          topOrganismos: [
+            { $match: { 'organismo.nombreInciso': { $nin: ['', null] } } },
+            { $group: { _id: '$organismo.nombreInciso', cantidad: { $sum: 1 } } },
+            { $sort: { cantidad: -1 } },
+            { $limit: 5 },
+            { $project: { _id: 0, nombre: '$_id', cantidad: 1 } },
+          ],
+          ultimasAdjudicaciones: [
+            { $match: { 'adjudicacion.fechaAdjudicacion': { $ne: null } } },
+            { $sort: { 'adjudicacion.fechaAdjudicacion': -1 } },
+            { $limit: 5 },
+            {
+              $project: {
+                _id: 0,
+                licitacionId: '$id',
+                descripcion: 1,
+                organismo: '$organismo.nombreInciso',
+                proveedor: '$adjudicacion.proveedor.razonSocial',
+                montoTotal: '$adjudicacion.montoTotal',
+                moneda: '$adjudicacion.moneda',
+                fechaAdjudicacion: '$adjudicacion.fechaAdjudicacion',
+              },
+            },
+          ],
+        },
+      },
+    ]);
+
+    return {
+      anio: anio ?? null, // eco del recorte pedido (null = histórico)
+      totalLicitaciones: r.total[0]?.n ?? 0,
+      vigentes: r.vigentes[0]?.n ?? 0,
+      montosPorMoneda: r.montosPorMoneda,
+      topOrganismos: r.topOrganismos,
+      ultimasAdjudicaciones: r.ultimasAdjudicaciones,
+    };
+  }
+
   // Resumen de adjudicaciones ganadas por un proveedor (para PerfilEmpresa).
   //
   // Usamos un aggregation pipeline con $facet: después del $match inicial
