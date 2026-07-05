@@ -248,18 +248,17 @@ frontend/src/app/
 
 ## 6. PENDIENTES (en orden de valor sugerido)
 
-### PRÓXIMO — Bloque Frontend: pulir la experiencia con los datos ya cargados
-El circuito funciona; ahora que hay ~35k licitaciones, 90k proveedores y
-alertas andando, la UI puede aprovecharlos. Candidatos (el autor prioriza):
-- [ ] Dashboard/home: hoy `/` redirige a la lista. Números gordos (vigentes
-      reales, montos adjudicados del año POR MONEDA, top organismos, últimas
-      adjudicaciones) — requiere endpoint `/estadisticas` (aggregation $facet,
-      mismo patrón que el perfil de empresa)
+### EN CURSO — Bloque Frontend: pulir la experiencia con los datos ya cargados
+- [x] Dashboard/home en `/`: GET /estadisticas?anio (default "este año", el
+      marco de referencia del autor; $match antes del $facet). Dato conocido:
+      el año corriente no tiene adjudicaciones hasta su dump (enero siguiente)
+      — el vacío se explica en la propia UI. Módulo estadisticas/ aparte
+      porque cruza dominios (licitaciones + proveedores).
+- [x] Formato: MontoPipe (es-UY + sigla: "12.345.678 UYU") y FechaRelativaPipe
+      ("cierra en 3 días", por días CALENDARIO) en core/pipes/
 - [ ] `GET /organismos` desde la codiguera → selector de organismo con nombre
       en los filtros de licitaciones y en el form de alertas (hoy el inciso se
       escribe a mano como número — poco humano)
-- [ ] Formato: montos con separador de miles + moneda, fechas relativas
-      ("cierra en 3 días"), badges de estado consistentes en todas las vistas
 - [ ] Estados de carga (skeletons) y responsive
 - [ ] Detalle de licitación: link al portal (urlOrigen), navegación mejorada
 
