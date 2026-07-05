@@ -248,23 +248,51 @@ frontend/src/app/
 
 ## 6. PENDIENTES (en orden de valor sugerido)
 
-### Bloque 5 — Alertas (HECHO salvo email)
-- [x] CRUD de alertas + motor de matcheo en la ingesta + notificaciones + frontend
-- [x] Tipo VENCIMIENTO: cron de reloj (diario 8:00 + al arrancar), ventana 48h
-- [ ] Canal email (nodemailer o provider): las notificaciones ya se persisten,
-      email es OTRO canal sobre el mismo motor. Requiere que el autor elija
-      proveedor y aporte credenciales (SMTP app password / Resend / etc.)
-- Tipo ADJUDICACION: declarado en el dominio pero NO construible en tiempo útil
-  (las adjudicaciones llegan por el dump OCDS anual). Cambiaría con el scraping
-  de la página de detalle.
-- Refinamiento anotado: ventana de aviso por-alerta ("avisame 7 días antes") =
-  un campo en el schema de Alerta + filtrar en el scheduler.
+### PRÓXIMO — Bloque Frontend: pulir la experiencia con los datos ya cargados
+El circuito funciona; ahora que hay ~35k licitaciones, 90k proveedores y
+alertas andando, la UI puede aprovecharlos. Candidatos (el autor prioriza):
+- [ ] Dashboard/home: hoy `/` redirige a la lista. Números gordos (vigentes
+      reales, montos adjudicados del año POR MONEDA, top organismos, últimas
+      adjudicaciones) — requiere endpoint `/estadisticas` (aggregation $facet,
+      mismo patrón que el perfil de empresa)
+- [ ] `GET /organismos` desde la codiguera → selector de organismo con nombre
+      en los filtros de licitaciones y en el form de alertas (hoy el inciso se
+      escribe a mano como número — poco humano)
+- [ ] Formato: montos con separador de miles + moneda, fechas relativas
+      ("cierra en 3 días"), badges de estado consistentes en todas las vistas
+- [ ] Estados de carga (skeletons) y responsive
+- [ ] Detalle de licitación: link al portal (urlOrigen), navegación mejorada
+
+### Bloque 5b — Boletín por email (PLANEADO; completa el MVP, diseño decidido)
+El autor quiere multicuenta a futuro: difundir compras nuevas y avisos de
+vencimiento a suscriptores. Decisiones YA tomadas (sesión 2026-07-04):
+- **Puerto EmailSender** (Ports & Adapters, como ProveedoresRepository):
+  adapters ResendEmailSender (fetch, sin deps) / LogEmailSender (sin API key).
+  El proveedor es un detalle intercambiable — Resend NO es la arquitectura.
+- **Boletín ≠ Alertas**: boletín = broadcast digest diario de nuevos llamados
+  (sin criterios); alertas = personalizadas (ya existen). El boletín REUSA la
+  detección de nuevos de la ingesta; no forzar uno dentro del otro.
+- **Fase 1** (sin suscripción pública): colección `suscriptores` {email, activo}
+  con alta manual + digest diario 8:00 + armarEmailDigest() como función pura
+  + conectar email a las notificaciones de alertas existentes.
+- **Fase 2**: suscripción pública con double opt-in y link de baja (tokens, SIN
+  login). Preferencias del suscriptor = CriteriosAlerta + el matcher existente.
+  REQUIERE dominio propio verificado (SPF/DKIM — peaje del ecosistema email,
+  no del proveedor). Fase 3 (solo si el producto lo pide): cuentas con login.
+- Digest antes que metralleta (96 corridas de cron ≠ 96 emails).
 
 ### Bloque 6 — Calidad e infra
-- [ ] Ingestar más años OCDS (2024, 2023... — bajar ZIPs y correr script)
+- [ ] Ingestar más años OCDS (2024, 2023... — bajar ZIPs y correr script;
+      lo puede hacer el autor sin sesión)
 - [ ] Extraer `shared/types` a paquete compartido (hoy el frontend duplica a mano)
 - [ ] e2e de endpoints, CI, dockerizar backend+frontend, Atlas para prod
 - [ ] Observabilidad: health check que verifique Mongo
+
+### Deudas chicas de alertas (anotadas)
+- Tipo ADJUDICACION: declarado pero NO construible en tiempo útil (los datos
+  llegan por el dump anual). Cambiaría con el scraping de la página de detalle.
+- Ventana de aviso por-alerta ("avisame 7 días antes") = un campo en el schema
+  de Alerta + filtrar en el scheduler de vencimientos.
 
 ### Bugs / deudas chicas conocidas
 - Los 9 llamados UCC/UACM del RSS quedan con `inciso: 0` (correcto: no son un
