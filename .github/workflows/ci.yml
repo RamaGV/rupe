@@ -1,0 +1,56 @@
+# CI del monorepo: dos jobs PARALELOS (backend y frontend) — si uno
+# rompe, el otro igual reporta; el push queda verde solo si ambos pasan.
+#
+# Los e2e corren acá sin configurar nada gracias a mongodb-memory-server:
+# descarga su propio mongod en el runner (y queda cacheado con npm).
+name: CI
+
+on:
+  push:
+    branches: [master, main]
+  pull_request:
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+
+      # npm ci (no install): respeta el lockfile EXACTO — si el lock y el
+      # package.json divergen, falla en vez de "arreglarlo" en silencio
+      - run: npm ci
+      - name: Typecheck
+        run: npx tsc --noEmit
+      - name: Tests unitarios
+        run: npx jest
+      - name: Tests e2e
+        run: npm run test:e2e
+
+  frontend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - run: npm ci
+      - name: Tests (vitest)
+        run: npx ng test --watch=false
+      # el build de prod detecta lo que ng test no: presupuestos de
+      # tamaño, template errors en modo AOT estricto
+      - name: Build de producción
+        run: npx ng build
