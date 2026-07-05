@@ -263,8 +263,21 @@ frontend/src/app/
 - [x] Docker: Dockerfiles multi-stage + nginx con proxy /api (adiós CORS en
       prod) + compose con mongo propio en 27018 (no choca con el de dev,
       nace vacío). environment.prod.ts con apiUrl RELATIVA.
-      ⚠ PENDIENTE de verificación manual: docker compose up --build.
-- [ ] Extraer shared/types a paquete compartido (último item interno)
+      Verificado por el autor 2026-07-05: compose up ok.
+- [ ] Extraer shared/types a paquete compartido — SPEC decidida (2026-07-05),
+      hacer en sesión dedicada. Dos hallazgos que definen el alcance:
+      (a) los tipos del frontend NO son copia exacta: usan string donde el
+          dominio usa Date (JSON no tiene fechas). El paquete necesita el
+          dominio + un mapped type `Serializado<T>` (Date→string, recursivo)
+          del que el frontend DERIVA sus tipos.
+      (b) npm workspaces cascada: lockfile único en la raíz → los npm ci del
+          CI cambian de path → los Dockerfiles necesitan build context RAÍZ
+          (hoy copian solo su carpeta) → compose cambia.
+      Plan: 1) packages/shared (tipos + Serializado<T>), 2) workspaces en la
+      raíz, 3) backend/src/shared/types re-exporta desde @rupe/shared (cero
+      cambios de imports), 4) frontend migra sus copias a Serializado<...>,
+      5) CI y Dockerfiles a contexto raíz, 6) re-verificar la cadena entera
+      (jest, e2e, ng test, build, CI verde, compose up).
 - [ ] Atlas para prod — requiere cuenta del autor (como Resend: decisión +
       credenciales suyas al .env)
 - [ ] Ingestar más años OCDS (2024, 2023...) — lo puede hacer el autor sin sesión
