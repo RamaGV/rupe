@@ -1,21 +1,45 @@
-version: "3.9"
+# Stack completo: mongo + backend + frontend.
+#
+# OJO (convivencia con el entorno de dev): este compose levanta SU mongo
+# con SU volumen — nace VACÍO (los datos de desarrollo viven en el
+# contenedor "mongodb" hecho a mano). Para no chocar puertos con ese
+# contenedor, acá mongo se expone en el 27018 del host. Dentro de la red
+# de compose los servicios se hablan por nombre (mongodb:27017).
+#
+#   docker compose up --build      # levanta todo
+#   http://localhost:8080          # frontend (nginx proxya /api al backend)
 
 services:
   mongodb:
     image: mongo:8
     container_name: rupe
-
     restart: unless-stopped
-
     ports:
-      - "27017:27017"
-
+      - "27018:27017"
     environment:
       MONGO_INITDB_ROOT_USERNAME: admin
       MONGO_INITDB_ROOT_PASSWORD: admin
-
     volumes:
       - mongodb_data:/data/db
+
+  backend:
+    build: ./backend
+    restart: unless-stopped
+    depends_on:
+      - mongodb
+    environment:
+      MONGODB_URI: mongodb://admin:admin@mongodb:27017/RUPE?authSource=admin
+      CORS_ORIGIN: http://localhost:8080
+    ports:
+      - "3000:3000"
+
+  frontend:
+    build: ./frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "8080:80"
 
 volumes:
   mongodb_data:

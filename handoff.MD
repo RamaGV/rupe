@@ -257,12 +257,16 @@ frontend/src/app/
       override: RssSchedulerService (saldría a la red). Fija los contratos
       ganados: vigente derivado, campos internos ocultos, shape de error,
       perfil cruzado, alertas sin criterios = 400. `npm run test:e2e`.
-- [ ] CI (GitHub Actions): jest + test:e2e + ng test + tsc en cada push.
-      BLOQUEADO por el autor: el repo no tiene remote — crear repo en GitHub
-      y pushear (acción del autor, con sus credenciales, en su consola)
-- [ ] Dockerizar backend + frontend (el healthcheck ya habla su idioma)
-- [ ] Atlas para prod
-- [ ] Extraer shared/types a paquete compartido
+- [x] CI (GitHub Actions): backend (tsc+jest+e2e) y frontend (vitest+build
+      prod) en paralelo en cada push. Repo: github.com/RamaGV/rupe.
+      Primera corrida VERDE (072cae7).
+- [x] Docker: Dockerfiles multi-stage + nginx con proxy /api (adiós CORS en
+      prod) + compose con mongo propio en 27018 (no choca con el de dev,
+      nace vacío). environment.prod.ts con apiUrl RELATIVA.
+      ⚠ PENDIENTE de verificación manual: docker compose up --build.
+- [ ] Extraer shared/types a paquete compartido (último item interno)
+- [ ] Atlas para prod — requiere cuenta del autor (como Resend: decisión +
+      credenciales suyas al .env)
 - [ ] Ingestar más años OCDS (2024, 2023...) — lo puede hacer el autor sin sesión
 
 ### HECHO — Bloque Frontend: pulido con los datos ya cargados
