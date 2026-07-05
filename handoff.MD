@@ -256,9 +256,9 @@ frontend/src/app/
       porque cruza dominios (licitaciones + proveedores).
 - [x] Formato: MontoPipe (es-UY + sigla: "12.345.678 UYU") y FechaRelativaPipe
       ("cierra en 3 días", por días CALENDARIO) en core/pipes/
-- [ ] `GET /organismos` desde la codiguera → selector de organismo con nombre
-      en los filtros de licitaciones y en el form de alertas (hoy el inciso se
-      escribe a mano como número — poco humano)
+- [x] `GET /organismos` + selector por nombre en filtros de licitaciones y
+      form de alertas. OrganismosApi en core/ con shareReplay(1) (referencia
+      compartida, una request por sesión). La tabla de alertas muestra nombres.
 - [ ] Estados de carga (skeletons) y responsive
 - [ ] Detalle de licitación: link al portal (urlOrigen), navegación mejorada
 
