@@ -1,0 +1,8 @@
+{
+  "name": "@rupe/shared",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Contrato de dominio compartido entre backend y frontend",
+  "main": "src/index.ts",
+  "types": "src/index.ts"
+}

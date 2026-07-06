@@ -1,6 +1,6 @@
 // src/app/features/alertas/alertas-page/alertas-page.ts
 import { Component, OnInit, inject, signal } from '@angular/core';
-import { AlertasApi, Alerta } from '../alertas-api';
+import { AlertasApi, Alerta, CriteriosAlerta } from '../alertas-api';
 import { TIPOS_CONTRATACION } from '../../licitaciones/licitaciones-api';
 import { OrganismosApi, OrganismoCodiguera } from '../../../core/organismos-api';
 
@@ -72,7 +72,11 @@ export class AlertasPage implements OnInit {
     // ofrece UNO por simplicidad — el caso real dominante
     const inciso = parseInt(this.incisoSeleccionado(), 10);
     const incisos = Number.isInteger(inciso) && inciso > 0 ? [inciso] : [];
-    const tiposContratacion = this.tipoSeleccionado() ? [this.tipoSeleccionado()] : [];
+    // el select solo ofrece valores de TIPOS_CONTRATACION: el cast al
+    // tipo del dominio es seguro (y el backend valida igual con IsEnum)
+    const tiposContratacion = (
+      this.tipoSeleccionado() ? [this.tipoSeleccionado()] : []
+    ) as NonNullable<CriteriosAlerta['tiposContratacion']>;
 
     this.guardando.set(true);
     this.alertasApi

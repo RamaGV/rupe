@@ -1,0 +1,9 @@
+# context raíz: que no viajen gigas ni secretos al daemon
+.git
+.github
+**/node_modules
+**/dist
+**/.angular
+backend/data
+.env
+*.md

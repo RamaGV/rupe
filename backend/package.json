@@ -11,7 +11,7 @@
     "start": "nest start",
     "start:dev": "nest start --watch",
     "start:debug": "nest start --debug --watch",
-    "start:prod": "node dist/main",
+    "start:prod": "node dist/backend/src/main",
     "ingesta:ocds": "ts-node -r tsconfig-paths/register src/scripts/ingesta-ocds.ts",
     "ingesta:codigueras": "ts-node -r tsconfig-paths/register src/scripts/ingesta-codigueras.ts",
     "ingesta:proveedores": "ts-node -r tsconfig-paths/register src/scripts/ingesta-proveedores.ts",

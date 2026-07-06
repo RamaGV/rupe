@@ -36,6 +36,7 @@ export interface NotificacionAlerta {
   id: string;
   alertaId: string;
   alertaNombre: string;
+  tipoAlerta?: `${TipoAlerta}`; // snapshot del tipo que la generó
   licitacionId: string;
   descripcion: string;
   organismo: string;

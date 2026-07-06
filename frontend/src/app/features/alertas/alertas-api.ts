@@ -3,37 +3,17 @@ import { Service, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { Api } from '../../core/api';
 
-// Copia manual del contrato del backend (shared/types/alerta.types.ts).
-// Solo los criterios CONSTRUIBLES hoy: monto y familias existen en el
-// dominio pero el RSS no los trae, así que el backend no los acepta.
-export interface CriteriosAlerta {
-  palabrasClave?: string[];
-  incisos?: number[];
-  tiposContratacion?: string[];
-}
+// Derivados del dominio compartido (@rupe/shared).
+import type {
+  Alerta as AlertaDominio,
+  CriteriosAlerta as CriteriosAlertaDominio,
+  NotificacionAlerta as NotificacionDominio,
+  Serializado,
+} from '@rupe/shared';
 
-export interface Alerta {
-  id: string;
-  nombre: string;
-  tipo: string; // hoy siempre "nuevo_llamado"
-  criterios: CriteriosAlerta;
-  activa: boolean;
-  creadaEn: string;
-}
-
-export interface NotificacionAlerta {
-  id: string;
-  alertaId: string;
-  alertaNombre: string;
-  tipoAlerta?: string; // "nuevo_llamado" | "vencimiento" (ausente en notificaciones viejas)
-  licitacionId: string; // navegable a /licitaciones/:id
-  descripcion: string;
-  organismo: string;
-  tipoContratacion: string;
-  fechaRecepcionOfertas?: string;
-  leida: boolean;
-  creadaEn: string;
-}
+export type Alerta = Serializado<AlertaDominio>;
+export type CriteriosAlerta = Serializado<CriteriosAlertaDominio>;
+export type NotificacionAlerta = Serializado<NotificacionDominio>;
 
 export interface BandejaNotificaciones {
   sinLeer: number;

@@ -24,6 +24,7 @@ const PAGINA: PaginaProveedores = {
       razonSocial: 'EMPRESA DE PRUEBA S.A.',
       estado: 'ACTIVO',
       pais: 'Uruguay',
+      urlOrigen: 'file://test.csv',
     },
   ],
   total: 1,

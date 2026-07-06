@@ -264,20 +264,20 @@ frontend/src/app/
       prod) + compose con mongo propio en 27018 (no choca con el de dev,
       nace vacío). environment.prod.ts con apiUrl RELATIVA.
       Verificado por el autor 2026-07-05: compose up ok.
-- [ ] Extraer shared/types a paquete compartido — SPEC decidida (2026-07-05),
-      hacer en sesión dedicada. Dos hallazgos que definen el alcance:
-      (a) los tipos del frontend NO son copia exacta: usan string donde el
-          dominio usa Date (JSON no tiene fechas). El paquete necesita el
-          dominio + un mapped type `Serializado<T>` (Date→string, recursivo)
-          del que el frontend DERIVA sus tipos.
-      (b) npm workspaces cascada: lockfile único en la raíz → los npm ci del
-          CI cambian de path → los Dockerfiles necesitan build context RAÍZ
-          (hoy copian solo su carpeta) → compose cambia.
-      Plan: 1) packages/shared (tipos + Serializado<T>), 2) workspaces en la
-      raíz, 3) backend/src/shared/types re-exporta desde @rupe/shared (cero
-      cambios de imports), 4) frontend migra sus copias a Serializado<...>,
-      5) CI y Dockerfiles a contexto raíz, 6) re-verificar la cadena entera
-      (jest, e2e, ng test, build, CI verde, compose up).
+- [x] @rupe/shared HECHO (2026-07-05) — implementación FINAL difiere de la
+      spec: tsconfig paths + shims relativos, SIN npm workspaces (tsc no
+      reescribe paths al emitir: un bare specifier explotaría en runtime;
+      el workspace además cascadeaba lockfile→CI). Cómo quedó:
+      · packages/shared/src: tipos de dominio + Serializado<T> (Date→string,
+        string-enum→union de literales `${T}`, recursivo; números intactos)
+      · backend/src/shared/types/{index,enums}.ts = shims con re-export
+        RELATIVO (../../../../packages/shared/src) — cero cambios de imports;
+        dist pasa a dist/backend/src/main (start:prod y entryFile ajustados)
+      · frontend: paths "@rupe/shared" en tsconfig (sin baseUrl: deprecado);
+        las *-api.ts DERIVAN sus tipos (type X = Serializado<XDominio>)
+      · Docker: build context RAÍZ (compose context: . + dockerfile:) con
+        .dockerignore raíz. ⚠ re-verificar: docker compose up --build
+      · verificado: tsc + 60 jest + 14 e2e + 6 vitest + ng build prod
 - [ ] Atlas para prod — requiere cuenta del autor (como Resend: decisión +
       credenciales suyas al .env)
 - [ ] Ingestar más años OCDS (2024, 2023...) — lo puede hacer el autor sin sesión

@@ -3,43 +3,21 @@ import { Service, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { Api } from '../../core/api';
 
-export interface ProveedorRupe {
-  tipoDocumento: string;
-  numeroDocumento: string;
-  razonSocial: string;
-  estado: string;
-  pais: string;
-  direccionFiscal?: {
-    departamento?: string;
-    localidad?: string;
-    domicilio?: string;
-  };
-}
+// Derivados del dominio compartido (@rupe/shared). El backend expone
+// la vista PÚBLICA (sin fechaIngesta) — acá se llama ProveedorRupe por
+// continuidad con los componentes existentes.
+import type {
+  ProveedorPublico,
+  PerfilEmpresa as PerfilEmpresaDominio,
+  AdjudicacionResumen as AdjudicacionResumenDominio,
+  MontoPorMoneda as MontoPorMonedaDominio,
+  Serializado,
+} from '@rupe/shared';
 
-// Copia manual del contrato del backend (shared/types/proveedor.types.ts)
-export interface AdjudicacionResumen {
-  licitacionId: string;
-  numeroCompra: string;
-  descripcion: string;
-  organismo: string;
-  montoTotal?: number;
-  moneda?: string;
-  fechaAdjudicacion?: string; // ISO string por HTTP
-}
-
-export interface MontoPorMoneda {
-  moneda: string;
-  total: number;
-  cantidad: number;
-}
-
-export interface PerfilEmpresa extends ProveedorRupe {
-  totalLicitacionesGanadas: number;
-  montosPorMoneda: MontoPorMoneda[];
-  organismosMasFrecuentes: string[];
-  ultimaActividad?: string;
-  ultimasAdjudicaciones: AdjudicacionResumen[];
-}
+export type ProveedorRupe = Serializado<ProveedorPublico>;
+export type PerfilEmpresa = Serializado<PerfilEmpresaDominio>;
+export type AdjudicacionResumen = Serializado<AdjudicacionResumenDominio>;
+export type MontoPorMoneda = Serializado<MontoPorMonedaDominio>;
 
 export interface PaginaProveedores {
   datos: ProveedorRupe[];

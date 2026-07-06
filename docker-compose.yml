@@ -23,7 +23,9 @@ services:
       - mongodb_data:/data/db
 
   backend:
-    build: ./backend
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
     restart: unless-stopped
     depends_on:
       - mongodb
@@ -34,7 +36,9 @@ services:
       - "3000:3000"
 
   frontend:
-    build: ./frontend
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
     restart: unless-stopped
     depends_on:
       - backend

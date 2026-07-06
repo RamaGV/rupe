@@ -3,63 +3,22 @@ import { Service, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { Api } from '../../core/api';
 
-// Copia manual del contrato del backend (shared/types/licitacion.types.ts).
-// Deuda técnica aceptada hasta extraer un paquete @rupe/shared.
-// OJO: acá las fechas son string (ISO), no Date — JSON no tiene tipo fecha,
-// así que lo que llega por HTTP es siempre texto. Convertir solo si hace falta.
-export interface Organismo {
-  inciso: number;
-  nombreInciso: string;
-  unidadEjecutora: string;
-}
+// El contrato de dominio vive en @rupe/shared (una sola fuente de
+// verdad con el backend). Las formas de acá se DERIVAN: Serializado<T>
+// convierte Date→string, porque JSON no tiene fechas — lo que llega
+// por HTTP es siempre texto.
+import type {
+  Licitacion as LicitacionDominio,
+  Organismo as OrganismoDominio,
+  ItemLlamado as ItemLlamadoDominio,
+  Adjudicacion as AdjudicacionDominio,
+  Serializado,
+} from '@rupe/shared';
 
-export interface ItemLlamado {
-  numero: number;
-  codigoArticulo: number;
-  descripcion: string;
-  cantidad: number;
-  unidad: string;
-  precioUnitario?: number; // solo viene de OCDS
-  moneda?: string;
-}
-
-export interface ContactoLlamado {
-  nombre?: string;
-  email?: string;
-  telefono?: string;
-}
-
-export interface ProveedorBasico {
-  tipoDocumento: string;
-  numeroDocumento: string; // misma clave que numeroDocumento en RUPE
-  razonSocial: string;
-}
-
-export interface Adjudicacion {
-  estado: string;
-  proveedor?: ProveedorBasico;
-  montoTotal?: number;
-  moneda?: string;
-  fechaAdjudicacion?: string;
-}
-
-export interface Licitacion {
-  id: string;
-  numeroCompra: string;
-  anio: number;
-  tipo: string;
-  estado: string; // vigente | adjudicado | desierto | sin_efecto
-  aperturaElectronica: boolean;
-  organismo: Organismo;
-  descripcion: string;
-  items: ItemLlamado[];
-  contacto?: ContactoLlamado;
-  adjudicacion?: Adjudicacion;
-  fechaPublicacion: string;
-  fechaRecepcionOfertas?: string;
-  fechaUltimaModificacion?: string;
-  urlOrigen: string;
-}
+export type Licitacion = Serializado<LicitacionDominio>;
+export type Organismo = Serializado<OrganismoDominio>;
+export type ItemLlamado = Serializado<ItemLlamadoDominio>;
+export type Adjudicacion = Serializado<AdjudicacionDominio>;
 
 // Shape exacto que devuelve LicitacionesService.buscar() en el backend
 export interface PaginaLicitaciones {
