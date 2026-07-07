@@ -33,7 +33,22 @@ export interface PuntoMensual {
   montoUYU: number;
 }
 
+export interface TipoResumen {
+  tipo: string;
+  cantidad: number;
+}
+
+// Ranking en UYU etiquetado (regla 4: no existe un "total" multi-moneda)
+export interface ProveedorTop {
+  numeroDocumento: string;
+  razonSocial: string;
+  totalUYU: number;
+  adjudicaciones: number;
+}
+
 export interface Estadisticas {
+  porTipo: TipoResumen[];
+  topProveedores: ProveedorTop[];
   evolucionMensual: PuntoMensual[];
   anio: number | null; // null = histórico completo
   totalLicitaciones: number;

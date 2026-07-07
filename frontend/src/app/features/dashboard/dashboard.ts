@@ -33,11 +33,30 @@ export class Dashboard implements OnInit {
   // stats() o aparece el canvas (viewChild es signal) — sin hooks de
   // ciclo de vida ni timing manual, el patrón zoneless de la casa.
   private canvasEvolucion = viewChild<ElementRef<HTMLCanvasElement>>('evolucion');
+  private canvasTipos = viewChild<ElementRef<HTMLCanvasElement>>('tipos');
   private grafico?: Chart;
+  private donaTipos?: Chart;
 
   constructor() {
     effect(() => {
       const s = this.stats();
+      const canvasDona = this.canvasTipos()?.nativeElement;
+      if (s?.porTipo?.length && canvasDona) {
+        this.donaTipos?.destroy();
+        this.donaTipos = new Chart(canvasDona, {
+          type: 'doughnut',
+          data: {
+            labels: s.porTipo.map((t) => t.tipo),
+            datasets: [{ data: s.porTipo.map((t) => t.cantidad) }],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { position: 'right' } },
+          },
+        });
+      }
+
       const canvas = this.canvasEvolucion()?.nativeElement;
       if (!s?.evolucionMensual?.length || !canvas) return;
 

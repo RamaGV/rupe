@@ -89,6 +89,41 @@
       </div>
     </div>
 
+    <div class="grid gap-6 lg:grid-cols-2 mt-6">
+      <!-- Distribución por tipo (dona) -->
+      @if (s.porTipo.length > 0) {
+        <div class="bg-white rounded-xl shadow p-6">
+          <h2 class="text-sm font-semibold text-gray-600 uppercase mb-4">Por tipo de contratación</h2>
+          <div class="h-64"><canvas #tipos></canvas></div>
+        </div>
+      }
+
+      <!-- Ranking de proveedores: lista NAVEGABLE (un canvas no linkea) -->
+      @if (s.topProveedores.length > 0) {
+        <div class="bg-white rounded-xl shadow p-6">
+          <h2 class="text-sm font-semibold text-gray-600 uppercase mb-4">
+            Proveedores que más ganaron <span class="normal-case text-gray-400">(UYU)</span>
+          </h2>
+          <ol class="space-y-3">
+            @for (prov of s.topProveedores; track prov.numeroDocumento; let i = $index) {
+              <li class="flex items-baseline justify-between gap-3 text-sm">
+                <a
+                  [routerLink]="['/proveedores', prov.numeroDocumento]"
+                  class="text-blue-600 hover:underline truncate"
+                >
+                  {{ i + 1 }}. {{ prov.razonSocial }}
+                </a>
+                <span class="text-right shrink-0">
+                  <span class="font-medium text-gray-800">{{ prov.totalUYU | monto }}</span>
+                  <span class="text-xs text-gray-400"> · {{ prov.adjudicaciones }} adj.</span>
+                </span>
+              </li>
+            }
+          </ol>
+        </div>
+      }
+    </div>
+
     <!-- Actividad mensual (Chart.js) -->
     @if (s.evolucionMensual.length > 1) {
       <div class="bg-white rounded-xl shadow p-6 mt-6">

@@ -132,6 +132,35 @@ export class LicitacionesService {
             { $limit: 5 },
             { $project: { _id: 0, nombre: '$_id', cantidad: 1 } },
           ],
+          // Distribución por tipo de contratación (dona del dashboard)
+          porTipo: [
+            { $group: { _id: '$tipo', cantidad: { $sum: 1 } } },
+            { $sort: { cantidad: -1 } },
+            { $limit: 8 },
+            { $project: { _id: 0, tipo: '$_id', cantidad: 1 } },
+          ],
+          // Ranking de proveedores por monto ganado — en UYU etiquetado
+          // (regla 4: un ranking "total" mezclando monedas sería mentira)
+          topProveedores: [
+            {
+              $match: {
+                'adjudicacion.moneda': 'Pesos Uruguayos',
+                'adjudicacion.montoTotal': { $gt: 0 },
+              },
+            },
+            {
+              $group: {
+                _id: '$adjudicacion.proveedor.numeroDocumento',
+                razonSocial: { $first: '$adjudicacion.proveedor.razonSocial' },
+                totalUYU: { $sum: '$adjudicacion.montoTotal' },
+                adjudicaciones: { $sum: 1 },
+              },
+            },
+            { $match: { _id: { $ne: null } } },
+            { $sort: { totalUYU: -1 } },
+            { $limit: 5 },
+            { $project: { _id: 0, numeroDocumento: '$_id', razonSocial: 1, totalUYU: 1, adjudicaciones: 1 } },
+          ],
           // Actividad por mes para el gráfico del dashboard: cantidad de
           // llamados publicados + monto adjudicado en UYU (UNA moneda,
           // etiquetada — regla 4: jamás sumar monedas distintas).
@@ -183,6 +212,8 @@ export class LicitacionesService {
       vigentes: r.vigentes[0]?.n ?? 0,
       montosPorMoneda: r.montosPorMoneda,
       topOrganismos: r.topOrganismos,
+      porTipo: r.porTipo,
+      topProveedores: r.topProveedores,
       evolucionMensual: [...r.evolucionMensual].reverse(), // cronológico
       ultimasAdjudicaciones: r.ultimasAdjudicaciones,
     };
