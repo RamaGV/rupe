@@ -25,7 +25,16 @@ export interface AdjudicacionReciente {
   fechaAdjudicacion?: string;
 }
 
+// Un punto del gráfico de actividad: llamados publicados + monto
+// adjudicado en UYU (UNA moneda etiquetada, jamás una suma de varias)
+export interface PuntoMensual {
+  mes: string; // "2025-03"
+  llamados: number;
+  montoUYU: number;
+}
+
 export interface Estadisticas {
+  evolucionMensual: PuntoMensual[];
   anio: number | null; // null = histórico completo
   totalLicitaciones: number;
   vigentes: number;

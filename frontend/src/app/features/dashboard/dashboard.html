@@ -89,6 +89,19 @@
       </div>
     </div>
 
+    <!-- Actividad mensual (Chart.js) -->
+    @if (s.evolucionMensual.length > 1) {
+      <div class="bg-white rounded-xl shadow p-6 mt-6">
+        <h2 class="text-sm font-semibold text-gray-600 uppercase mb-4">Actividad mensual</h2>
+        <div class="h-72">
+          <canvas #evolucion></canvas>
+        </div>
+        <p class="text-xs text-gray-400 mt-2">
+          El monto es solo UYU (las demás monedas no se suman: sería inventar una conversión).
+        </p>
+      </div>
+    }
+
     <!-- Últimas adjudicaciones -->
     <div class="bg-white rounded-xl shadow p-6 mt-6">
       <h2 class="text-sm font-semibold text-gray-600 uppercase mb-4">Últimas adjudicaciones</h2>

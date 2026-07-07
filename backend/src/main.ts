@@ -1,6 +1,7 @@
 // src/main.ts
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
+import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 import { GlobalExceptionFilter } from './shared/filters/global-exception.filter';
 
@@ -30,6 +31,19 @@ async function bootstrap() {
 
   // Prefijo global para todas las rutas: /api/v1/...
   app.setGlobalPrefix('api/v1');
+
+  // Documentación viva de la API en /api/docs — se genera de los
+  // controllers y DTOs reales (el plugin de nest-cli infiere los tipos
+  // de class-validator): no puede quedar desactualizada.
+  const config = new DocumentBuilder()
+    .setTitle('Boletín de Contrataciones del Estado')
+    .setDescription(
+      'API pública de licitaciones, proveedores, organismos y alertas del Estado uruguayo. ' +
+        'Fuentes oficiales de ARCE: RSS, dumps OCDS, RUPE y codigueras.',
+    )
+    .setVersion('1.0')
+    .build();
+  SwaggerModule.setup('api/docs', app, SwaggerModule.createDocument(app, config));
 
   const port = process.env.PORT ?? 3000;
   await app.listen(port);

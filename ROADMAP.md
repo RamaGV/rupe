@@ -19,7 +19,8 @@
 - [ ] **Ingestar 2002–2024**: las tendencias multianuales convierten el
       visor en herramienta de análisis ("cuánto creció el gasto de ASSE
       en 10 años"). Solo bajar ZIPs y correr el script existente.
-- [ ] **Gráficos en el dashboard** (Chart.js o ngx-charts sobre los $facet
+- [~] **Gráficos en el dashboard** (HECHO: actividad mensual llamados+UYU;
+      quedan: distribución por tipo, ranking de proveedores) (Chart.js sobre los $facet
       que ya existen): evolución mensual de montos por moneda, distribución
       por tipo, ranking de proveedores por monto ganado.
 - [ ] **Perfil de organismo**: espejo del perfil de empresa — quién le
@@ -35,7 +36,8 @@
       licitación → tráfico orgánico de gente buscando exactamente eso.
 - [ ] **Boletín email** (5b, spec en handoff.MD): digest diario + double
       opt-in cuando haya dominio. Suscriptores = la audiencia propia.
-- [ ] **API pública documentada** (Swagger/@nestjs/swagger): media hora de
+- [x] **API pública documentada** — Swagger en /api/docs, generada de los
+      DTOs reales vía plugin de nest-cli. (era: media hora de
       trabajo y demuestra profesionalismo — y terceros pueden construir
       encima (más visibilidad).
 

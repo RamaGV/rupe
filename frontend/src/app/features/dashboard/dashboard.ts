@@ -1,5 +1,8 @@
 // src/app/features/dashboard/dashboard.ts
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, effect, viewChild, ElementRef } from '@angular/core';
+import { Chart, registerables } from 'chart.js';
+
+Chart.register(...registerables);
 import { RouterLink } from '@angular/router';
 import { SlicePipe } from '@angular/common';
 import { DashboardApi, Estadisticas } from './dashboard-api';
@@ -25,6 +28,56 @@ export class Dashboard implements OnInit {
   anio = signal(ANIO_ACTUAL);
   anioActual = ANIO_ACTUAL;
   aniosDisponibles = [ANIO_ACTUAL, ANIO_ACTUAL - 1, ANIO_ACTUAL - 2];
+
+  // El gráfico se redibuja REACTIVAMENTE: el effect corre cuando cambian
+  // stats() o aparece el canvas (viewChild es signal) — sin hooks de
+  // ciclo de vida ni timing manual, el patrón zoneless de la casa.
+  private canvasEvolucion = viewChild<ElementRef<HTMLCanvasElement>>('evolucion');
+  private grafico?: Chart;
+
+  constructor() {
+    effect(() => {
+      const s = this.stats();
+      const canvas = this.canvasEvolucion()?.nativeElement;
+      if (!s?.evolucionMensual?.length || !canvas) return;
+
+      this.grafico?.destroy();
+      this.grafico = new Chart(canvas, {
+        data: {
+          labels: s.evolucionMensual.map((p) => p.mes),
+          datasets: [
+            {
+              type: 'bar',
+              label: 'Llamados publicados',
+              data: s.evolucionMensual.map((p) => p.llamados),
+              backgroundColor: 'rgba(59, 130, 246, 0.5)',
+              yAxisID: 'y',
+            },
+            {
+              type: 'line',
+              label: 'Adjudicado (millones UYU)',
+              data: s.evolucionMensual.map((p) => p.montoUYU / 1_000_000),
+              borderColor: 'rgb(22, 163, 74)',
+              tension: 0.3,
+              yAxisID: 'y2',
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: { position: 'left', title: { display: true, text: 'llamados' } },
+            y2: {
+              position: 'right',
+              grid: { drawOnChartArea: false },
+              title: { display: true, text: 'millones UYU' },
+            },
+          },
+        },
+      });
+    });
+  }
 
   ngOnInit(): void {
     this.cargar();

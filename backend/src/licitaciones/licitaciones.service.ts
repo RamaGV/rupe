@@ -132,6 +132,30 @@ export class LicitacionesService {
             { $limit: 5 },
             { $project: { _id: 0, nombre: '$_id', cantidad: 1 } },
           ],
+          // Actividad por mes para el gráfico del dashboard: cantidad de
+          // llamados publicados + monto adjudicado en UYU (UNA moneda,
+          // etiquetada — regla 4: jamás sumar monedas distintas).
+          // Últimos 24 meses del recorte (desc + limit + reverse en JS).
+          evolucionMensual: [
+            {
+              $group: {
+                _id: { $dateToString: { format: '%Y-%m', date: '$fechaPublicacion' } },
+                llamados: { $sum: 1 },
+                montoUYU: {
+                  $sum: {
+                    $cond: [
+                      { $eq: ['$adjudicacion.moneda', 'Pesos Uruguayos'] },
+                      { $ifNull: ['$adjudicacion.montoTotal', 0] },
+                      0,
+                    ],
+                  },
+                },
+              },
+            },
+            { $sort: { _id: -1 } },
+            { $limit: 24 },
+            { $project: { _id: 0, mes: '$_id', llamados: 1, montoUYU: 1 } },
+          ],
           ultimasAdjudicaciones: [
             { $match: { 'adjudicacion.fechaAdjudicacion': { $ne: null } } },
             { $sort: { 'adjudicacion.fechaAdjudicacion': -1 } },
@@ -159,6 +183,7 @@ export class LicitacionesService {
       vigentes: r.vigentes[0]?.n ?? 0,
       montosPorMoneda: r.montosPorMoneda,
       topOrganismos: r.topOrganismos,
+      evolucionMensual: [...r.evolucionMensual].reverse(), // cronológico
       ultimasAdjudicaciones: r.ultimasAdjudicaciones,
     };
   }
