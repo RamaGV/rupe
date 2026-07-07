@@ -23,7 +23,8 @@
       quedan: distribución por tipo, ranking de proveedores) (Chart.js sobre los $facet
       que ya existen): evolución mensual de montos por moneda, distribución
       por tipo, ranking de proveedores por monto ganado.
-- [ ] **Perfil de organismo**: espejo del perfil de empresa — quién le
+- [x] **Perfil de organismo** (/organismos/:inciso): espejo del perfil de
+      empresa — quién le
       vende, cuánto gasta, en qué. Con ambas caras queda el grafo completo
       del mercado estatal.
 - [ ] **Radar de precios** (feature diferencial para proveedores): precio

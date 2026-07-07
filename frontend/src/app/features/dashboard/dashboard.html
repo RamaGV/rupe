@@ -81,7 +81,13 @@
         <ol class="space-y-2">
           @for (o of s.topOrganismos; track o.nombre; let i = $index) {
             <li class="flex items-center justify-between text-sm">
-              <span class="text-gray-700">{{ i + 1 }}. {{ o.nombre }}</span>
+              @if (o.inciso > 0) {
+                <a [routerLink]="['/organismos', o.inciso]" class="text-blue-600 hover:underline">
+                  {{ i + 1 }}. {{ o.nombre }}
+                </a>
+              } @else {
+                <span class="text-gray-700">{{ i + 1 }}. {{ o.nombre }}</span>
+              }
               <span class="text-gray-400">{{ o.cantidad | monto }}</span>
             </li>
           }

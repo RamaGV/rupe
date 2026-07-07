@@ -11,6 +11,7 @@ export interface MontoPorMoneda {
 }
 
 export interface OrganismoResumen {
+  inciso: number;
   nombre: string;
   cantidad: number;
 }

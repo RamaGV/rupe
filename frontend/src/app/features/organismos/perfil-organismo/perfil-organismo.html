@@ -1,0 +1,102 @@
+<!-- src/app/features/organismos/perfil-organismo/perfil-organismo.html -->
+<div class="p-4 sm:p-8 max-w-5xl mx-auto">
+  <a routerLink="/" class="text-sm text-blue-600 hover:underline">← Volver al inicio</a>
+
+  @if (cargando()) {
+    <div class="mt-4"><app-skeleton tipo="lineas" [filas]="8" /></div>
+  } @else if (error(); as err) {
+    <p class="text-red-600 bg-red-50 rounded-lg p-4 mt-4">{{ err }}</p>
+  } @else if (perfil(); as p) {
+    <!-- Encabezado -->
+    <div class="bg-white rounded-xl shadow p-6 mt-4">
+      <p class="text-xs text-gray-400 uppercase">Organismo · inciso {{ p.inciso }}</p>
+      <h1 class="text-xl font-bold text-gray-800">{{ p.nombre }}</h1>
+      <div class="grid grid-cols-2 md:grid-cols-3 gap-4 mt-4 text-sm">
+        <div>
+          <p class="text-2xl font-bold text-gray-800">{{ p.totalLlamados | monto }}</p>
+          <p class="text-gray-500">llamados registrados</p>
+        </div>
+        <div>
+          <p class="text-2xl font-bold text-green-700">{{ p.vigentes | monto }}</p>
+          <p class="text-gray-500">vigentes — se puede ofertar</p>
+        </div>
+        @if (p.registradoDesde) {
+          <div>
+            <p class="text-2xl font-bold text-gray-800">{{ p.registradoDesde | slice:0:4 }}</p>
+            <p class="text-gray-500">actividad desde</p>
+          </div>
+        }
+      </div>
+    </div>
+
+    <div class="grid gap-6 lg:grid-cols-2 mt-6">
+      <!-- Cuánto gasta -->
+      <div class="bg-white rounded-xl shadow p-6">
+        <h2 class="text-sm font-semibold text-gray-600 uppercase mb-4">Total adjudicado por moneda</h2>
+        <div class="space-y-3">
+          @for (m of p.montosPorMoneda; track m.moneda) {
+            <div class="flex items-baseline justify-between">
+              <span class="text-xl font-bold text-gray-800">{{ m.total | monto: m.moneda }}</span>
+              <span class="text-xs text-gray-400">{{ m.cantidad | monto }} adjudicaciones</span>
+            </div>
+          } @empty {
+            <p class="text-sm text-gray-500">Sin adjudicaciones cargadas</p>
+          }
+        </div>
+      </div>
+
+      <!-- A quién le compra -->
+      <div class="bg-white rounded-xl shadow p-6">
+        <h2 class="text-sm font-semibold text-gray-600 uppercase mb-4">
+          A quién le compra <span class="normal-case text-gray-400">(UYU)</span>
+        </h2>
+        <ol class="space-y-3">
+          @for (prov of p.topProveedores; track prov.numeroDocumento; let i = $index) {
+            <li class="flex items-baseline justify-between gap-3 text-sm">
+              <a [routerLink]="['/proveedores', prov.numeroDocumento]" class="text-blue-600 hover:underline truncate">
+                {{ i + 1 }}. {{ prov.razonSocial }}
+              </a>
+              <span class="font-medium text-gray-800 shrink-0">{{ prov.totalUYU | monto }}</span>
+            </li>
+          } @empty {
+            <p class="text-sm text-gray-500">Sin adjudicaciones en UYU</p>
+          }
+        </ol>
+      </div>
+    </div>
+
+    <!-- Cómo compra + últimas adjudicaciones -->
+    <div class="grid gap-6 lg:grid-cols-2 mt-6">
+      <div class="bg-white rounded-xl shadow p-6">
+        <h2 class="text-sm font-semibold text-gray-600 uppercase mb-4">Cómo compra</h2>
+        <ol class="space-y-2">
+          @for (t of p.porTipo; track t.tipo) {
+            <li class="flex items-center justify-between text-sm">
+              <span class="text-gray-700">{{ t.tipo }}</span>
+              <span class="text-gray-400">{{ t.cantidad | monto }}</span>
+            </li>
+          }
+        </ol>
+      </div>
+
+      <div class="bg-white rounded-xl shadow p-6">
+        <h2 class="text-sm font-semibold text-gray-600 uppercase mb-4">Últimas adjudicaciones</h2>
+        <div class="space-y-3">
+          @for (a of p.ultimasAdjudicaciones; track a.licitacionId) {
+            <div class="text-sm border-t border-gray-100 pt-2 first:border-0 first:pt-0">
+              <a [routerLink]="['/licitaciones', a.licitacionId]" class="text-blue-600 hover:underline line-clamp-1">
+                {{ a.descripcion }}
+              </a>
+              <p class="text-xs text-gray-500">
+                @if (a.proveedor) { → {{ a.proveedor }} · }
+                {{ a.montoTotal | monto: a.moneda }}
+              </p>
+            </div>
+          } @empty {
+            <p class="text-sm text-gray-500">Sin adjudicaciones cargadas</p>
+          }
+        </div>
+      </div>
+    </div>
+  }
+</div>

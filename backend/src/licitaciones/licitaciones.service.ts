@@ -127,10 +127,15 @@ export class LicitacionesService {
           ],
           topOrganismos: [
             { $match: { 'organismo.nombreInciso': { $nin: ['', null] } } },
-            { $group: { _id: '$organismo.nombreInciso', cantidad: { $sum: 1 } } },
+            {
+              $group: {
+                _id: { inciso: '$organismo.inciso', nombre: '$organismo.nombreInciso' },
+                cantidad: { $sum: 1 },
+              },
+            },
             { $sort: { cantidad: -1 } },
             { $limit: 5 },
-            { $project: { _id: 0, nombre: '$_id', cantidad: 1 } },
+            { $project: { _id: 0, inciso: '$_id.inciso', nombre: '$_id.nombre', cantidad: 1 } },
           ],
           // Distribución por tipo de contratación (dona del dashboard)
           porTipo: [
@@ -215,6 +220,108 @@ export class LicitacionesService {
       porTipo: r.porTipo,
       topProveedores: r.topProveedores,
       evolucionMensual: [...r.evolucionMensual].reverse(), // cronológico
+      ultimasAdjudicaciones: r.ultimasAdjudicaciones,
+    };
+  }
+
+  // El espejo del perfil de empresa: ¿cómo compra ESTE organismo?
+  // Mismo patrón $facet tras un $match por inciso.
+  async perfilOrganismo(inciso: number) {
+    const ahora = new Date();
+    const [r] = await this.licitacionModel.aggregate([
+      { $match: { 'organismo.inciso': inciso } },
+      {
+        $facet: {
+          totales: [
+            {
+              $group: {
+                _id: null,
+                llamados: { $sum: 1 },
+                nombre: { $last: '$organismo.nombreInciso' },
+                desde: { $min: '$fechaPublicacion' },
+              },
+            },
+          ],
+          vigentes: [
+            {
+              $match: {
+                estado: 'vigente',
+                $or: [
+                  { fechaRecepcionOfertas: { $gte: ahora } },
+                  { fechaRecepcionOfertas: null },
+                ],
+              },
+            },
+            { $count: 'n' },
+          ],
+          montosPorMoneda: [
+            { $match: { 'adjudicacion.montoTotal': { $gt: 0 } } },
+            {
+              $group: {
+                _id: { $ifNull: ['$adjudicacion.moneda', 'sin moneda'] },
+                total: { $sum: '$adjudicacion.montoTotal' },
+                cantidad: { $sum: 1 },
+              },
+            },
+            { $sort: { total: -1 } },
+            { $project: { _id: 0, moneda: '$_id', total: 1, cantidad: 1 } },
+          ],
+          // a quién le compra (ranking UYU etiquetado — regla 4)
+          topProveedores: [
+            {
+              $match: {
+                'adjudicacion.moneda': 'Pesos Uruguayos',
+                'adjudicacion.montoTotal': { $gt: 0 },
+              },
+            },
+            {
+              $group: {
+                _id: '$adjudicacion.proveedor.numeroDocumento',
+                razonSocial: { $first: '$adjudicacion.proveedor.razonSocial' },
+                totalUYU: { $sum: '$adjudicacion.montoTotal' },
+                adjudicaciones: { $sum: 1 },
+              },
+            },
+            { $match: { _id: { $ne: null } } },
+            { $sort: { totalUYU: -1 } },
+            { $limit: 5 },
+            { $project: { _id: 0, numeroDocumento: '$_id', razonSocial: 1, totalUYU: 1, adjudicaciones: 1 } },
+          ],
+          porTipo: [
+            { $group: { _id: '$tipo', cantidad: { $sum: 1 } } },
+            { $sort: { cantidad: -1 } },
+            { $limit: 5 },
+            { $project: { _id: 0, tipo: '$_id', cantidad: 1 } },
+          ],
+          ultimasAdjudicaciones: [
+            { $match: { 'adjudicacion.fechaAdjudicacion': { $ne: null } } },
+            { $sort: { 'adjudicacion.fechaAdjudicacion': -1 } },
+            { $limit: 5 },
+            {
+              $project: {
+                _id: 0,
+                licitacionId: '$id',
+                descripcion: 1,
+                proveedor: '$adjudicacion.proveedor.razonSocial',
+                montoTotal: '$adjudicacion.montoTotal',
+                moneda: '$adjudicacion.moneda',
+                fechaAdjudicacion: '$adjudicacion.fechaAdjudicacion',
+              },
+            },
+          ],
+        },
+      },
+    ]);
+
+    return {
+      inciso,
+      nombre: r.totales[0]?.nombre ?? '',
+      totalLlamados: r.totales[0]?.llamados ?? 0,
+      registradoDesde: r.totales[0]?.desde,
+      vigentes: r.vigentes[0]?.n ?? 0,
+      montosPorMoneda: r.montosPorMoneda,
+      topProveedores: r.topProveedores,
+      porTipo: r.porTipo,
       ultimasAdjudicaciones: r.ultimasAdjudicaciones,
     };
   }
