@@ -15,7 +15,9 @@ import type {
   Serializado,
 } from '@rupe/shared';
 
-export type Licitacion = Serializado<LicitacionDominio>;
+// Omit fechaIngesta: el dominio la tiene, pero la API la OCULTA
+// (PROYECCION_PUBLICA) — el tipo del frontend es la vista pública real.
+export type Licitacion = Serializado<Omit<LicitacionDominio, 'fechaIngesta'>>;
 export type Organismo = Serializado<OrganismoDominio>;
 export type ItemLlamado = Serializado<ItemLlamadoDominio>;
 export type Adjudicacion = Serializado<AdjudicacionDominio>;

@@ -55,7 +55,10 @@ export interface Licitacion {
   descripcion: string;
   items: ItemLlamado[];
   contacto?: ContactoLlamado;
-  aclaraciones: AclaracionLlamado[];
+  // opcional: ninguna fuente actual las trae (llegarían con el scraping
+  // de la página de detalle) — el schema de Mongo ni las persiste aún.
+  // Declararlas required era prometer lo que la API no cumple.
+  aclaraciones?: AclaracionLlamado[];
 
   // Fechas clave
   fechaPublicacion: Date;
