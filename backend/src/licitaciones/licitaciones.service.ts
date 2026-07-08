@@ -224,6 +224,29 @@ export class LicitacionesService {
     };
   }
 
+  // Licitaciones similares para el detalle: mismo organismo y tipo,
+  // las más recientes primero. Heurística simple y honesta — suficiente
+  // para "mirá qué más compra así este organismo" (comparar precios).
+  async similares(id: string) {
+    const base = await this.licitacionModel
+      .findOne({ id }, { 'organismo.inciso': 1, tipo: 1 })
+      .lean();
+    if (!base) return [];
+
+    return this.licitacionModel
+      .find(
+        {
+          id: { $ne: id },
+          'organismo.inciso': base.organismo.inciso,
+          tipo: base.tipo,
+        },
+        { _id: 0, id: 1, numeroCompra: 1, descripcion: 1, estado: 1, fechaPublicacion: 1, 'adjudicacion.montoTotal': 1, 'adjudicacion.moneda': 1 },
+      )
+      .sort({ fechaPublicacion: -1 })
+      .limit(5)
+      .lean();
+  }
+
   // Export CSV ("modo periodista"): la MISMA busqueda que la lista,
   // pero hasta 1000 filas y en el dialecto de Excel uruguayo — separador
   // ';' y BOM UTF-8 (el mismo formato de los CSV oficiales de RUPE).

@@ -84,4 +84,8 @@ export class LicitacionesApi {
   getPorId(id: string): Observable<Licitacion> {
     return this.api.get<Licitacion>(`licitaciones/${id}`);
   }
+
+  getSimilares(id: string): Observable<Partial<Licitacion>[]> {
+    return this.api.get<Partial<Licitacion>[]>(`licitaciones/${id}/similares`);
+  }
 }

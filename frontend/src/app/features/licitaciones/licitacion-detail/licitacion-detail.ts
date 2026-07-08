@@ -24,6 +24,7 @@ export class LicitacionDetail implements OnInit {
   id = input.required<string>();
 
   licitacion = signal<Licitacion | null>(null);
+  similares = signal<Partial<Licitacion>[]>([]);
   cargando = signal(true);
   error = signal<string | null>(null);
 

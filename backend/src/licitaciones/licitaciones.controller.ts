@@ -50,6 +50,12 @@ export class LicitacionesController {
     return licitacion;
   }
 
+  // dos segmentos: no choca con ':id' (que captura uno solo)
+  @Get(':id/similares')
+  similares(@Param('id') id: string) {
+    return this.licitacionesService.similares(id);
+  }
+
   // Endpoint de debug para disparar la ingesta a mano sin esperar
   // el cron - muy útil mientras probás el parser. Sacalo o
   // protegelo con un guard antes de ir a producción.

@@ -145,5 +145,24 @@
         </p>
       </div>
     }
+
+    <!-- Similares: mismo organismo y tipo — para comparar precios -->
+    @if (similares().length > 0) {
+      <div class="bg-white rounded-xl shadow p-6 mt-4">
+        <h2 class="font-bold text-gray-800 mb-3">Similares de este organismo</h2>
+        <div class="space-y-2">
+          @for (s of similares(); track s.id) {
+            <div class="flex items-baseline justify-between gap-3 text-sm border-t border-gray-100 pt-2 first:border-0 first:pt-0">
+              <a [routerLink]="['/licitaciones', s.id]" class="text-blue-600 hover:underline line-clamp-1">
+                {{ s.numeroCompra || s.id }} — {{ s.descripcion }}
+              </a>
+              <span class="text-xs text-gray-400 shrink-0">
+                {{ s.adjudicacion?.montoTotal ? (s.adjudicacion!.montoTotal | monto: s.adjudicacion!.moneda) : s.estado }}
+              </span>
+            </div>
+          }
+        </div>
+      </div>
+    }
   }
 </div>

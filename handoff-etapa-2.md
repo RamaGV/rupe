@@ -48,8 +48,8 @@ del matcher existente.
 2. [x] **"Crear alerta desde esta búsqueda"** — HECHO (2026-07-08): botón
    azul en la barra de filtros; texto→palabrasClave, organismo→incisos,
    tipo→tiposContratacion; navega a /alertas al crear.
-3. **Licitaciones similares** en el detalle (mismo organismo + tipo, o
-   texto parecido) — retiene navegación y sirve para comparar precios.
+3. [x] **Licitaciones similares** — HECHO (2026-07-08): GET /licitaciones/
+   :id/similares (mismo inciso + tipo, 5 más recientes) + sección en el detalle.
 4. **Mapa de Uruguay por intendencias** — el gasto de los incisos 80–99
    coloreado por departamento. Visual, compartible, periodístico.
 5. [x] **Página "Metodología"** — HECHO (2026-07-08): /metodologia con
@@ -57,8 +57,8 @@ del matcher existente.
    linkeada desde el footer.
 6. **Watchlist local** — ⭐ licitaciones guardadas en localStorage, sin
    cuenta. Barato y útil.
-7. **Glosario de compras públicas** (qué es una CD, una LA, el RUPE) —
-   útil + SEO de cola larga.
+7. [x] **Glosario** — HECHO (2026-07-08): /glosario con 12 términos en
+   lenguaje llano, linkeado del footer.
 8. **Timeline del llamado** — requiere guardar el dato CRUDO de cada
    release (idea ya anotada en handoff.MD): prórrogas y cambios visibles.
 9. **Accesibilidad** — pasada de a11y (focus visible, aria en tablas,
