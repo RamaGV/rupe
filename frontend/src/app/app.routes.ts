@@ -9,6 +9,7 @@ import { NotificacionesPage } from './features/alertas/notificaciones-page/notif
 import { Dashboard } from './features/dashboard/dashboard';
 import { PerfilOrganismoView } from './features/organismos/perfil-organismo/perfil-organismo';
 import { RadarPage } from './features/radar/radar-page';
+import { Metodologia } from './features/metodologia/metodologia';
 
 export const routes: Routes = [
   // la portada: números generales del boletín (antes redirigía a la lista)
@@ -23,4 +24,5 @@ export const routes: Routes = [
   { path: 'radar', component: RadarPage },
   { path: 'alertas', component: AlertasPage },
   { path: 'notificaciones', component: NotificacionesPage },
+  { path: 'metodologia', component: Metodologia },
 ];

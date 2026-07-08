@@ -59,9 +59,19 @@
         <option [value]="o.valor">{{ o.etiqueta }}</option>
       }
     </select>
+    @if (puedeCrearAlerta()) {
+      <button
+        (click)="crearAlertaDesdeFiltros()"
+        class="ml-auto px-3 py-2 rounded-lg text-sm bg-blue-600 text-white hover:bg-blue-700"
+        title="Convertir estos filtros en una alerta: te avisamos cuando aparezca algo nuevo que matchee"
+      >
+        🔔 Crear alerta con esta búsqueda
+      </button>
+    }
     <a
+      [class.ml-auto]="!puedeCrearAlerta()"
       [href]="urlExport()"
-      class="ml-auto px-3 py-2 rounded-lg text-sm border border-gray-200 text-gray-600 hover:bg-gray-100"
+      class="px-3 py-2 rounded-lg text-sm border border-gray-200 text-gray-600 hover:bg-gray-100"
       title="Descargar esta búsqueda como CSV (hasta 1000 filas)"
     >
       ⬇ CSV

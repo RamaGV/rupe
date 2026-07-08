@@ -14,6 +14,8 @@ import {
   ORDENES,
 } from '../licitaciones-api';
 import { OrganismosApi, OrganismoCodiguera } from '../../../core/organismos-api';
+import { AlertasApi } from '../../alertas/alertas-api';
+import { Router } from '@angular/router';
 import { environment } from '../../../../environments/environment';
 
 import { Skeleton } from '../../../core/ui/skeleton';
@@ -28,6 +30,8 @@ import { Skeleton } from '../../../core/ui/skeleton';
 export class LicitacionesList implements OnInit {
   private licitacionesApi = inject(LicitacionesApi);
   private organismosApi = inject(OrganismosApi);
+  private alertasApi = inject(AlertasApi);
+  private router = inject(Router);
 
   // opciones para los <select> del template
   readonly estados = ESTADOS_LLAMADO;
@@ -130,6 +134,31 @@ export class LicitacionesList implements OnInit {
       if (valor !== undefined && valor !== null && valor !== '') params.set(clave, String(valor));
     }
     return `${environment.apiUrl}/licitaciones/export.csv?${params.toString()}`;
+  }
+
+  // idea del handoff etapa 2: cero fricción entre buscar y suscribirse.
+  // Los filtros activos SE VUELVEN los criterios de una alerta nueva.
+  puedeCrearAlerta(): boolean {
+    return !!(this.filtros.texto || this.filtros.inciso || this.filtros.tipo);
+  }
+
+  crearAlertaDesdeFiltros(): void {
+    const { texto, inciso, tipo } = this.filtros;
+    const partes = [texto, tipo, inciso ? `inciso ${inciso}` : ''].filter(Boolean);
+    this.alertasApi
+      .crearAlerta(
+        `Búsqueda: ${partes.join(' · ')}`,
+        {
+          ...(texto && { palabrasClave: [texto] }),
+          ...(inciso && { incisos: [inciso] }),
+          ...(tipo && { tiposContratacion: [tipo] as never }),
+        },
+        'nuevo_llamado',
+      )
+      .subscribe({
+        next: () => this.router.navigate(['/alertas']),
+        error: () => this.error.set('No se pudo crear la alerta'),
+      });
   }
 
   esImportado(id: string): boolean {

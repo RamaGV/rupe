@@ -22,7 +22,9 @@ descrita en PENDIENTES-AUTOR.md + el tour completo de la última sesión.
 Todo lo técnico está pronto: health 200/503, Docker con context raíz,
 CI. Es crear cuentas y apuntar variables. Ver ROADMAP.md Fase A.
 
-### 2.2 — SSR/prerender (SIN dependencias externas — se puede ya)
+### 2.2 — SSR/prerender (sesión DEDICADA: Tema/Push/Chart usan APIs de
+### navegador — localStorage, navigator, canvas — que explotan en servidor
+### sin guards; el trabajo real es aislarlas, no el ng add)
 Angular SSR para que Google indexe cada licitación → tráfico orgánico.
 Además habilita OpenGraph por página ("compartí este llamado" con
 tarjeta linda). Es la última carta grande que no necesita al autor.
@@ -43,16 +45,16 @@ del matcher existente.
    del backend (web-push, gratis) y avisa aunque la pestaña esté cerrada.
    Convierte el boletín en app instalable en el teléfono. Candidata
    fuerte para arrancar la Etapa 2 sin esperar cuentas.
-2. **"Crear alerta desde esta búsqueda"** — un botón en la lista de
-   licitaciones que convierte los filtros activos en una alerta (un
-   click, cero fricción entre buscar y suscribirse).
+2. [x] **"Crear alerta desde esta búsqueda"** — HECHO (2026-07-08): botón
+   azul en la barra de filtros; texto→palabrasClave, organismo→incisos,
+   tipo→tiposContratacion; navega a /alertas al crear.
 3. **Licitaciones similares** en el detalle (mismo organismo + tipo, o
    texto parecido) — retiene navegación y sirve para comparar precios.
 4. **Mapa de Uruguay por intendencias** — el gasto de los incisos 80–99
    coloreado por departamento. Visual, compartible, periodístico.
-5. **Página "Metodología"** — de dónde salen los datos, cadencias,
-   limitaciones conocidas (el inciso 0, las monedas). Transparencia =
-   credibilidad = profesional.
+5. [x] **Página "Metodología"** — HECHO (2026-07-08): /metodologia con
+   fuentes, decisiones de presentación, limitaciones conocidas y contacto;
+   linkeada desde el footer.
 6. **Watchlist local** — ⭐ licitaciones guardadas en localStorage, sin
    cuenta. Barato y útil.
 7. **Glosario de compras públicas** (qué es una CD, una LA, el RUPE) —

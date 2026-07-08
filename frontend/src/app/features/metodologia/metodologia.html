@@ -1,0 +1,42 @@
+<!-- src/app/features/metodologia/metodologia.html -->
+<div class="p-4 sm:p-8 max-w-3xl mx-auto">
+  <h1 class="text-2xl font-bold text-gray-800 mb-1">Metodología y fuentes</h1>
+  <p class="text-sm text-gray-500 mb-6">Qué datos usamos, de dónde salen y qué limitaciones conocemos.</p>
+
+  <div class="bg-white rounded-xl shadow p-6 space-y-5 text-sm text-gray-700">
+    <section>
+      <h2 class="font-bold text-gray-800 mb-1">Fuentes — todas oficiales de ARCE</h2>
+      <ul class="list-disc pl-5 space-y-1">
+        <li><strong>RSS de comprasestatales.gub.uy</strong>: llamados vigentes, consultado cada 15 minutos.</li>
+        <li><strong>Dumps OCDS anuales</strong> (estándar Open Contracting): el histórico con adjudicaciones, items y precios. Se publican en enero del año siguiente.</li>
+        <li><strong>RUPE</strong>: el registro único de proveedores del Estado (CSV mensuales).</li>
+        <li><strong>Codigueras oficiales</strong>: incisos y unidades ejecutoras.</li>
+      </ul>
+    </section>
+    <section>
+      <h2 class="font-bold text-gray-800 mb-1">Decisiones de presentación</h2>
+      <ul class="list-disc pl-5 space-y-1">
+        <li><strong>Nunca sumamos monedas distintas</strong>: un "total" mezclando UYU y USD sería inventar una conversión. Todo monto lleva su moneda.</li>
+        <li><strong>"Vigente" significa que se puede ofertar hoy</strong>: la fuente deja llamados marcados como activos aunque su plazo haya cerrado; nosotros verificamos la fecha.</li>
+        <li>Los datos crudos se conservan tal como la fuente los publicó.</li>
+      </ul>
+    </section>
+    <section>
+      <h2 class="font-bold text-gray-800 mb-1">Limitaciones conocidas</h2>
+      <ul class="list-disc pl-5 space-y-1">
+        <li>Las adjudicaciones del año corriente llegan recién con el dump anual (enero siguiente): un llamado puede figurar sin resultado aunque ya se haya adjudicado.</li>
+        <li>Los llamados de las unidades de compra centralizadas (UCC/UACM) no pertenecen a un inciso y se muestran sin organismo asignado.</li>
+        <li>El radar de precios busca en descripciones de texto libre: puede haber falsos positivos.</li>
+      </ul>
+    </section>
+    <section>
+      <h2 class="font-bold text-gray-800 mb-1">¿Errores u omisiones?</h2>
+      <p>
+        Escribinos a
+        <a href="mailto:funes.gvr@gmail.com?subject=Boletín — datos" class="text-blue-600 hover:underline">funes.gvr@gmail.com</a>
+        o abrí un issue en
+        <a href="https://github.com/RamaGV/rupe" target="_blank" rel="noopener" class="text-blue-600 hover:underline">GitHub</a>.
+      </p>
+    </section>
+  </div>
+</div>
