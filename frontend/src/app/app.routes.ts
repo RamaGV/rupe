@@ -11,6 +11,7 @@ import { PerfilOrganismoView } from './features/organismos/perfil-organismo/perf
 import { RadarPage } from './features/radar/radar-page';
 import { Metodologia } from './features/metodologia/metodologia';
 import { Glosario } from './features/glosario/glosario';
+import { GuardadasPage } from './features/guardadas/guardadas-page';
 
 export const routes: Routes = [
   // la portada: números generales del boletín (antes redirigía a la lista)
@@ -27,4 +28,5 @@ export const routes: Routes = [
   { path: 'notificaciones', component: NotificacionesPage },
   { path: 'metodologia', component: Metodologia },
   { path: 'glosario', component: Glosario },
+  { path: 'guardadas', component: GuardadasPage },
 ];

@@ -39,13 +39,16 @@
         (click)="tema.alternar()"
         class="text-lg hover:opacity-70"
         [title]="tema.oscuro() ? 'Modo claro' : 'Modo oscuro'"
+        [attr.aria-label]="tema.oscuro() ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'"
       >
         {{ tema.oscuro() ? '☀️' : '🌙' }}
       </button>
+      <a routerLink="/guardadas" class="text-lg hover:opacity-70" title="Guardadas" aria-label="Licitaciones guardadas">⭐</a>
       <a
         routerLink="/notificaciones"
         class="relative text-lg hover:opacity-70"
         title="Notificaciones"
+        aria-label="Notificaciones"
       >
         🔔
         @if (sinLeer() > 0) {

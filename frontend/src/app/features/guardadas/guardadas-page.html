@@ -1,0 +1,27 @@
+<!-- src/app/features/guardadas/guardadas-page.html -->
+<div class="p-4 sm:p-8 max-w-3xl mx-auto">
+  <h1 class="text-2xl font-bold text-gray-800 mb-1">Guardadas ⭐</h1>
+  <p class="text-sm text-gray-500 mb-6">
+    Tu lista de seguimiento — vive en este navegador, sin cuenta.
+  </p>
+  <div class="bg-white rounded-xl shadow divide-y divide-gray-100">
+    @for (g of guardadas.lista(); track g.id) {
+      <div class="p-4 flex items-baseline justify-between gap-3 text-sm">
+        <a [routerLink]="['/licitaciones', g.id]" class="text-blue-600 hover:underline line-clamp-1">
+          {{ g.numeroCompra || g.id }} — {{ g.descripcion }}
+        </a>
+        <button
+          (click)="guardadas.alternar(g)"
+          class="text-gray-400 hover:text-red-600 shrink-0"
+          [attr.aria-label]="'Quitar ' + g.numeroCompra + ' de guardadas'"
+        >
+          quitar
+        </button>
+      </div>
+    } @empty {
+      <p class="p-8 text-center text-sm text-gray-500">
+        Nada guardado todavía — usá la ⭐ en la lista o el detalle de una licitación.
+      </p>
+    }
+  </div>
+</div>

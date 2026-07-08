@@ -16,6 +16,7 @@ import {
 import { OrganismosApi, OrganismoCodiguera } from '../../../core/organismos-api';
 import { AlertasApi } from '../../alertas/alertas-api';
 import { Router } from '@angular/router';
+import { Guardadas } from '../../../core/guardadas';
 import { environment } from '../../../../environments/environment';
 
 import { Skeleton } from '../../../core/ui/skeleton';
@@ -32,6 +33,7 @@ export class LicitacionesList implements OnInit {
   private organismosApi = inject(OrganismosApi);
   private alertasApi = inject(AlertasApi);
   private router = inject(Router);
+  guardadas = inject(Guardadas);
 
   // opciones para los <select> del template
   readonly estados = ESTADOS_LLAMADO;

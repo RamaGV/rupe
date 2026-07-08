@@ -101,6 +101,13 @@
           @for (lic of p.datos; track lic.id) {
             <tr class="border-t border-gray-100 hover:bg-gray-50">
               <td class="px-4 py-3 font-mono whitespace-nowrap">
+                <button
+                  (click)="guardadas.alternar({ id: lic.id, numeroCompra: lic.numeroCompra, descripcion: lic.descripcion })"
+                  class="mr-1"
+                  [class]="guardadas.tiene(lic.id) ? 'text-amber-500' : 'text-gray-300 hover:text-amber-400'"
+                  [attr.aria-label]="(guardadas.tiene(lic.id) ? 'Quitar de' : 'Agregar a') + ' guardadas'"
+                  [attr.aria-pressed]="guardadas.tiene(lic.id)"
+                >★</button>
                 <a [routerLink]="['/licitaciones', lic.id]" class="text-blue-600 hover:underline">
                   {{ lic.numeroCompra || '(sin número)' }}
                 </a>

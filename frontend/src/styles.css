@@ -54,3 +54,10 @@ html {
 body {
   @apply bg-gray-50;
 }
+
+/* a11y: anillo de foco visible para navegación por teclado, en ambos temas */
+:focus-visible {
+  outline: 2px solid var(--color-blue-600);
+  outline-offset: 2px;
+  border-radius: 4px;
+}

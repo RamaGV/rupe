@@ -55,14 +55,16 @@ del matcher existente.
 5. [x] **Página "Metodología"** — HECHO (2026-07-08): /metodologia con
    fuentes, decisiones de presentación, limitaciones conocidas y contacto;
    linkeada desde el footer.
-6. **Watchlist local** — ⭐ licitaciones guardadas en localStorage, sin
-   cuenta. Barato y útil.
+6. [x] **Watchlist local** — HECHO (2026-07-08): ⭐ en la lista, página
+   /guardadas (snapshot en localStorage, cero backend), link en navbar.
 7. [x] **Glosario** — HECHO (2026-07-08): /glosario con 12 términos en
    lenguaje llano, linkeado del footer.
 8. **Timeline del llamado** — requiere guardar el dato CRUDO de cada
    release (idea ya anotada en handoff.MD): prórrogas y cambios visibles.
-9. **Accesibilidad** — pasada de a11y (focus visible, aria en tablas,
-   contraste del modo oscuro ya verificado en OKLCH).
+9. [x] **Accesibilidad (primera pasada)** — HECHO (2026-07-08): lang=es,
+   :focus-visible global con el azul del tema, aria-label/aria-pressed en
+   botones de ícono (tema, campanita, estrella, guardadas). Queda para
+   una segunda pasada: aria en tablas y navegación por teclado del form.
 
 ## Recordatorios operativos
 - Los archivos de datos van en backend/data/ (gitignoreado); links de
