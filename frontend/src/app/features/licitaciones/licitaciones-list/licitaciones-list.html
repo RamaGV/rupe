@@ -59,6 +59,13 @@
         <option [value]="o.valor">{{ o.etiqueta }}</option>
       }
     </select>
+    <a
+      [href]="urlExport()"
+      class="ml-auto px-3 py-2 rounded-lg text-sm border border-gray-200 text-gray-600 hover:bg-gray-100"
+      title="Descargar esta búsqueda como CSV (hasta 1000 filas)"
+    >
+      ⬇ CSV
+    </a>
   </div>
 
   @if (cargando()) {

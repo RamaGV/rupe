@@ -1,5 +1,6 @@
 // src/licitaciones/licitaciones.controller.ts
-import { Controller, Get, Param, Query, NotFoundException } from '@nestjs/common';
+import { Controller, Get, Param, Query, NotFoundException, Res } from '@nestjs/common';
+import type { Response } from 'express';
 import { LicitacionesService } from './licitaciones.service';
 import { RssIngestService } from './rss-ingest.service';
 import { VencimientosSchedulerService } from './vencimientos-scheduler.service';
@@ -20,6 +21,14 @@ export class LicitacionesController {
   @Get()
   buscar(@Query() filtros: BuscarLicitacionesDto) {
     return this.licitacionesService.buscar(filtros);
+  }
+
+  // Export CSV con LOS MISMOS filtros de la lista (tambien antes de ':id')
+  @Get('export.csv')
+  async exportar(@Query() filtros: BuscarLicitacionesDto, @Res({ passthrough: true }) res: Response) {
+    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+    res.setHeader('Content-Disposition', 'attachment; filename="licitaciones.csv"');
+    return this.licitacionesService.exportarCsv(filtros);
   }
 
   // OJO al orden: declarado ANTES de ':id' — "radar-precios" es un solo

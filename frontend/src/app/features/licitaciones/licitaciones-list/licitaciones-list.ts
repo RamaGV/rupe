@@ -14,6 +14,7 @@ import {
   ORDENES,
 } from '../licitaciones-api';
 import { OrganismosApi, OrganismoCodiguera } from '../../../core/organismos-api';
+import { environment } from '../../../../environments/environment';
 
 import { Skeleton } from '../../../core/ui/skeleton';
 
@@ -118,6 +119,17 @@ export class LicitacionesList implements OnInit {
   siguiente(): void {
     const p = this.pagina();
     if (p && p.page < p.totalPaginas) this.cargar(p.page + 1);
+  }
+
+  // "modo periodista": los MISMOS filtros de la vista, hasta 1000 filas,
+  // en CSV con dialecto Excel uruguayo (;, BOM). Es un <a href>: el
+  // navegador descarga solo (Content-Disposition del backend).
+  urlExport(): string {
+    const params = new URLSearchParams();
+    for (const [clave, valor] of Object.entries(this.filtros)) {
+      if (valor !== undefined && valor !== null && valor !== '') params.set(clave, String(valor));
+    }
+    return `${environment.apiUrl}/licitaciones/export.csv?${params.toString()}`;
   }
 
   esImportado(id: string): boolean {

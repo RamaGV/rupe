@@ -8,6 +8,7 @@ import { SlicePipe } from '@angular/common';
 import { DashboardApi, Estadisticas } from './dashboard-api';
 import { MontoPipe } from '../../core/pipes/monto.pipe';
 import { Skeleton } from '../../core/ui/skeleton';
+import { Tema } from '../../core/tema';
 
 const ANIO_ACTUAL = new Date().getFullYear();
 
@@ -19,6 +20,7 @@ const ANIO_ACTUAL = new Date().getFullYear();
 })
 export class Dashboard implements OnInit {
   private dashboardApi = inject(DashboardApi);
+  private tema = inject(Tema);
 
   stats = signal<Estadisticas | null>(null);
   cargando = signal(true);
@@ -40,6 +42,12 @@ export class Dashboard implements OnInit {
   constructor() {
     effect(() => {
       const s = this.stats();
+      // leer el tema DENTRO del effect: alternar claro/oscuro redibuja
+      // los charts con la tipografía y grillas del modo nuevo
+      const oscuro = this.tema.oscuro();
+      Chart.defaults.color = oscuro ? '#cbd5e1' : '#666';
+      Chart.defaults.borderColor = oscuro ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.1)';
+
       const canvasDona = this.canvasTipos()?.nativeElement;
       if (s?.porTipo?.length && canvasDona) {
         this.donaTipos?.destroy();

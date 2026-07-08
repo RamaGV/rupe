@@ -1,3 +1,56 @@
 /* /src/styles.css */
 
 @import 'tailwindcss';
+
+/* dark mode por CLASE (no por media query): el usuario elige con el
+   toggle y ThemeService pone .dark en <html> */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* ============================================================
+   MODO OSCURO SIN TOCAR LOS TEMPLATES
+   Tailwind v4 compila cada utilidad a una variable CSS
+   (bg-white → var(--color-white)), así que bajo .dark
+   REDEFINIMOS la paleta: la escala neutra se invierte y los
+   acentos pastel (badge *-100 / texto *-700) se adaptan.
+   Un template que dice "bg-white" significa "superficie", y
+   eso es lo que estas variables expresan.
+   ============================================================ */
+.dark {
+  /* neutros: página, superficies, bordes, texto */
+  --color-white: oklch(0.24 0.02 262);      /* superficie (cards, navbar) */
+  --color-gray-50: oklch(0.18 0.02 262);    /* fondo de página */
+  --color-gray-100: oklch(0.29 0.02 262);   /* headers de tabla, hovers suaves */
+  --color-gray-200: oklch(0.34 0.02 262);   /* bordes, barras de skeleton */
+  --color-gray-300: oklch(0.38 0.02 262);   /* bordes de inputs */
+  --color-gray-400: oklch(0.62 0.02 262);   /* texto terciario */
+  --color-gray-500: oklch(0.72 0.02 262);   /* texto secundario */
+  --color-gray-600: oklch(0.80 0.02 262);   /* texto de labels */
+  --color-gray-700: oklch(0.87 0.01 262);   /* texto principal suave */
+  --color-gray-800: oklch(0.93 0.01 262);   /* texto principal */
+
+  /* acentos: fondo pastel → oscuro profundo; texto 6/700 → claro */
+  --color-blue-100: oklch(0.32 0.08 260);
+  --color-blue-600: oklch(0.72 0.14 258);
+  --color-blue-700: oklch(0.78 0.12 258);
+  --color-green-100: oklch(0.32 0.06 150);
+  --color-green-700: oklch(0.78 0.14 150);
+  --color-red-50: oklch(0.28 0.06 25);
+  --color-red-100: oklch(0.32 0.08 25);
+  --color-red-200: oklch(0.4 0.1 25);
+  --color-red-600: oklch(0.74 0.16 25);
+  --color-amber-100: oklch(0.34 0.07 80);
+  --color-amber-600: oklch(0.8 0.13 80);
+  --color-amber-700: oklch(0.82 0.12 80);
+  --color-indigo-100: oklch(0.33 0.08 280);
+  --color-indigo-700: oklch(0.8 0.11 280);
+
+  color-scheme: dark; /* scrollbars e inputs nativos oscuros */
+}
+
+/* transición suave al cambiar de tema */
+html {
+  transition: background-color 0.2s ease;
+}
+body {
+  @apply bg-gray-50;
+}

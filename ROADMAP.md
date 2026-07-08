@@ -31,7 +31,12 @@
       resumen min/promedio/max POR MONEDA + muestras navegables. (era: precio
       unitario histórico por artículo — "¿a cuánto le vendió la competencia
       este ítem al Estado?". Los datos YA están (items OCDS con precios).
-- [ ] Export CSV de cualquier búsqueda ("modo periodista").
+- [x] Export CSV de cualquier búsqueda ("modo periodista"): mismos filtros,
+      hasta 1000 filas, dialecto Excel uruguayo (;, BOM).
+
+- [x] **Modo oscuro + estética**: paleta invertida vía variables CSS de
+      Tailwind v4 (cero cambios en templates), toggle 🌙/☀️ con preferencia
+      persistida, charts que siguen el tema, navbar sticky con blur.
 
 ## Fase C — Alcance y comunidad
 - [ ] **SEO/SSR**: prerender de Angular para que Google indexe cada

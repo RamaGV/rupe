@@ -1,6 +1,6 @@
 <!-- src/app/app.html -->
 <div class="min-h-screen bg-gray-50">
-  <nav class="bg-white border-b border-gray-200 px-4 sm:px-8 py-3 flex items-center justify-between flex-wrap gap-y-2">
+  <nav class="bg-white/90 backdrop-blur border-b border-gray-200 px-4 sm:px-8 py-3 flex items-center justify-between flex-wrap gap-y-2 sticky top-0 z-10">
     <div class="flex items-center gap-3 sm:gap-6 flex-wrap">
       <a routerLink="/" class="font-bold text-gray-800 hover:text-blue-600">
         Boletín de Contrataciones
@@ -35,6 +35,13 @@
       </a>
     </div>
     <div class="flex items-center gap-4">
+      <button
+        (click)="tema.alternar()"
+        class="text-lg hover:opacity-70"
+        [title]="tema.oscuro() ? 'Modo claro' : 'Modo oscuro'"
+      >
+        {{ tema.oscuro() ? '☀️' : '🌙' }}
+      </button>
       <a
         routerLink="/notificaciones"
         class="relative text-lg hover:opacity-70"

@@ -224,6 +224,38 @@ export class LicitacionesService {
     };
   }
 
+  // Export CSV ("modo periodista"): la MISMA busqueda que la lista,
+  // pero hasta 1000 filas y en el dialecto de Excel uruguayo — separador
+  // ';' y BOM UTF-8 (el mismo formato de los CSV oficiales de RUPE).
+  async exportarCsv(filtros: BuscarLicitacionesDto): Promise<string> {
+    // el DTO ya valido el input del usuario; el tope interno es nuestro
+    const { datos } = await this.buscar({ ...filtros, page: 1, limit: 1000 });
+
+    const celda = (v: unknown): string => {
+      if (v === undefined || v === null) return '';
+      const s = v instanceof Date ? v.toISOString() : String(v);
+      return `"${s.replace(/"/g, '""')}"`;
+    };
+
+    const filas = datos.map((l: any) =>
+      [
+        l.id, l.numeroCompra, l.anio, l.tipo, l.estado,
+        l.organismo?.nombreInciso, l.organismo?.unidadEjecutora,
+        l.descripcion, l.fechaPublicacion, l.fechaRecepcionOfertas,
+        l.adjudicacion?.proveedor?.razonSocial,
+        l.adjudicacion?.montoTotal, l.adjudicacion?.moneda, l.urlOrigen,
+      ].map(celda).join(';'),
+    );
+
+    const cabecera = [
+      'id', 'numeroCompra', 'anio', 'tipo', 'estado', 'organismo',
+      'unidadEjecutora', 'descripcion', 'fechaPublicacion',
+      'fechaRecepcionOfertas', 'proveedor', 'montoTotal', 'moneda', 'url',
+    ].join(';');
+
+    return '﻿' + [cabecera, ...filas].join('\r\n');
+  }
+
   // RADAR DE PRECIOS: ¿a cuánto se le vendió ESTE artículo al Estado?
   // Busca por texto en las descripciones de items (el usuario no conoce
   // los códigos de artículo de ARCE) y devuelve el resumen POR MONEDA

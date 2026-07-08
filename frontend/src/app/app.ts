@@ -4,6 +4,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
 import { timer, switchMap, catchError, of } from 'rxjs';
 import { Api } from './core/api';
+import { Tema } from './core/tema';
 import { AlertasApi } from './features/alertas/alertas-api';
 
 @Component({
@@ -18,6 +19,7 @@ export class App implements OnInit {
   sinLeer = signal(0);
 
   private apiService = inject(Api);
+  tema = inject(Tema);
   private alertasApi = inject(AlertasApi);
 
   constructor() {
