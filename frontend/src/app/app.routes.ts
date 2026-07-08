@@ -15,18 +15,18 @@ import { GuardadasPage } from './features/guardadas/guardadas-page';
 
 export const routes: Routes = [
   // la portada: números generales del boletín (antes redirigía a la lista)
-  { path: '', component: Dashboard, pathMatch: 'full' },
-  { path: 'licitaciones', component: LicitacionesList },
+  { path: '', component: Dashboard, pathMatch: 'full', title: 'Inicio' },
+  { path: 'licitaciones', component: LicitacionesList, title: 'Licitaciones' },
   // :id se enlaza al input "id" del componente (withComponentInputBinding)
-  { path: 'licitaciones/:id', component: LicitacionDetail },
-  { path: 'proveedores', component: ProveedoresList },
-  { path: 'proveedores/:documento', component: PerfilEmpresaView },
+  { path: 'licitaciones/:id', component: LicitacionDetail, title: 'Detalle del llamado' },
+  { path: 'proveedores', component: ProveedoresList, title: 'Proveedores' },
+  { path: 'proveedores/:documento', component: PerfilEmpresaView, title: 'Perfil de empresa' },
   // :inciso se enlaza al input "inciso" (withComponentInputBinding)
-  { path: 'organismos/:inciso', component: PerfilOrganismoView },
-  { path: 'radar', component: RadarPage },
-  { path: 'alertas', component: AlertasPage },
-  { path: 'notificaciones', component: NotificacionesPage },
-  { path: 'metodologia', component: Metodologia },
-  { path: 'glosario', component: Glosario },
-  { path: 'guardadas', component: GuardadasPage },
+  { path: 'organismos/:inciso', component: PerfilOrganismoView, title: 'Perfil de organismo' },
+  { path: 'radar', component: RadarPage, title: 'Radar de precios' },
+  { path: 'alertas', component: AlertasPage, title: 'Mis alertas' },
+  { path: 'notificaciones', component: NotificacionesPage, title: 'Notificaciones' },
+  { path: 'metodologia', component: Metodologia, title: 'Metodología' },
+  { path: 'glosario', component: Glosario, title: 'Glosario' },
+  { path: 'guardadas', component: GuardadasPage, title: 'Guardadas' },
 ];
