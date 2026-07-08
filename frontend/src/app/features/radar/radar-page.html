@@ -1,0 +1,95 @@
+<!-- src/app/features/radar/radar-page.html -->
+<div class="p-4 sm:p-8">
+  <h1 class="text-2xl font-bold text-gray-800 mb-1">Radar de precios</h1>
+  <p class="text-sm text-gray-500 mb-6">
+    ¿A cuánto se le vendió un artículo al Estado? Buscá en las descripciones
+    de los items adjudicados (precios reales de los dumps OCDS).
+  </p>
+
+  <input
+    type="search"
+    placeholder="Ej: resma de papel, cemento portland, guantes de nitrilo... (mín. 3 letras)"
+    class="border border-gray-300 rounded-lg px-4 py-3 text-sm w-full max-w-xl focus:outline-none focus:ring-2 focus:ring-blue-300 mb-6"
+    (input)="onBuscar($any($event.target).value)"
+  />
+
+  @if (error(); as err) {
+    <p class="text-red-600 bg-red-50 rounded-lg p-4 mb-4">{{ err }}</p>
+  }
+
+  @if (cargando()) {
+    <app-skeleton tipo="tarjetas" [filas]="3" />
+  } @else if (resultado(); as r) {
+    <!-- Resumen por moneda -->
+    <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-6">
+      @for (res of r.resumenPorMoneda; track res.moneda) {
+        <div class="bg-white rounded-xl shadow p-5">
+          <p class="text-xs text-gray-400 uppercase mb-2">
+            {{ res.moneda }} · {{ res.muestras }} muestras
+          </p>
+          <div class="flex items-baseline justify-between text-sm">
+            <span class="text-gray-500">mín {{ res.minimo | monto }}</span>
+            <span class="text-xl font-bold text-gray-800">{{ res.promedio | monto }}</span>
+            <span class="text-gray-500">máx {{ res.maximo | monto }}</span>
+          </div>
+          <p class="text-xs text-gray-400 text-center mt-1">promedio por unidad</p>
+        </div>
+      } @empty {
+        @if (buscado()) {
+          <p class="text-gray-500 sm:col-span-3">
+            Sin items con precio para esa búsqueda — probá con menos palabras.
+          </p>
+        }
+      }
+    </div>
+
+    <!-- Muestras -->
+    @if (r.muestras.length > 0) {
+      <div class="bg-white rounded-xl shadow overflow-hidden">
+        <div class="overflow-x-auto">
+        <table class="w-full min-w-[800px] text-sm text-left">
+          <thead class="bg-gray-100 text-gray-600 uppercase text-xs">
+            <tr>
+              <th class="px-4 py-3">Fecha</th>
+              <th class="px-4 py-3">Item</th>
+              <th class="px-4 py-3">Organismo</th>
+              <th class="px-4 py-3">Proveedor</th>
+              <th class="px-4 py-3 text-right">Precio unitario</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (m of r.muestras; track $index) {
+              <tr class="border-t border-gray-100 hover:bg-gray-50">
+                <td class="px-4 py-3 whitespace-nowrap text-gray-500">{{ m.fecha | slice:0:10 }}</td>
+                <td class="px-4 py-3 max-w-md">
+                  <a [routerLink]="['/licitaciones', m.licitacionId]" class="text-blue-600 hover:underline line-clamp-2">
+                    {{ m.item }}
+                  </a>
+                  <span class="text-xs text-gray-400">{{ m.cantidad }} {{ m.unidad }}</span>
+                </td>
+                <td class="px-4 py-3">
+                  @if (m.inciso > 0) {
+                    <a [routerLink]="['/organismos', m.inciso]" class="hover:underline">{{ m.organismo }}</a>
+                  } @else { {{ m.organismo }} }
+                </td>
+                <td class="px-4 py-3">
+                  @if (m.numeroDocumento) {
+                    <a [routerLink]="['/proveedores', m.numeroDocumento]" class="text-blue-600 hover:underline">
+                      {{ m.proveedor }}
+                    </a>
+                  } @else { — }
+                </td>
+                <td class="px-4 py-3 text-right font-medium whitespace-nowrap">
+                  {{ m.precioUnitario | monto: m.moneda }}
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+        </div>
+      </div>
+    }
+  } @else if (!buscado()) {
+    <p class="text-gray-400 text-sm">Escribí al menos 3 letras para buscar.</p>
+  }
+</div>

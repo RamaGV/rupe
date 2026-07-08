@@ -4,6 +4,7 @@ import { LicitacionesService } from './licitaciones.service';
 import { RssIngestService } from './rss-ingest.service';
 import { VencimientosSchedulerService } from './vencimientos-scheduler.service';
 import { BuscarLicitacionesDto } from './dto/buscar-licitaciones.dto';
+import { RadarPreciosDto } from './dto/radar-precios.dto';
 
 @Controller('licitaciones')
 export class LicitacionesController {
@@ -19,6 +20,13 @@ export class LicitacionesController {
   @Get()
   buscar(@Query() filtros: BuscarLicitacionesDto) {
     return this.licitacionesService.buscar(filtros);
+  }
+
+  // OJO al orden: declarado ANTES de ':id' — "radar-precios" es un solo
+  // segmento y la ruta paramétrica lo capturaría como id.
+  @Get('radar-precios')
+  radarPrecios(@Query() filtros: RadarPreciosDto) {
+    return this.licitacionesService.radarPrecios(filtros.texto);
   }
 
   // Antes devolvía 200 con null si no existía — un cliente tenía que

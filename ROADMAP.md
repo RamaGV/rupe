@@ -19,15 +19,16 @@
 - [ ] **Ingestar 2002–2024**: las tendencias multianuales convierten el
       visor en herramienta de análisis ("cuánto creció el gasto de ASSE
       en 10 años"). Solo bajar ZIPs y correr el script existente.
-- [~] **Gráficos en el dashboard** (HECHO: actividad mensual llamados+UYU;
-      quedan: distribución por tipo, ranking de proveedores) (Chart.js sobre los $facet
+- [x] **Gráficos en el dashboard**: actividad mensual, dona por tipo y
+      ranking navegable de proveedores (Chart.js sobre los $facet
       que ya existen): evolución mensual de montos por moneda, distribución
       por tipo, ranking de proveedores por monto ganado.
 - [x] **Perfil de organismo** (/organismos/:inciso): espejo del perfil de
       empresa — quién le
       vende, cuánto gasta, en qué. Con ambas caras queda el grafo completo
       del mercado estatal.
-- [ ] **Radar de precios** (feature diferencial para proveedores): precio
+- [x] **Radar de precios** (/radar): busca por texto en items adjudicados,
+      resumen min/promedio/max POR MONEDA + muestras navegables. (era: precio
       unitario histórico por artículo — "¿a cuánto le vendió la competencia
       este ítem al Estado?". Los datos YA están (items OCDS con precios).
 - [ ] Export CSV de cualquier búsqueda ("modo periodista").

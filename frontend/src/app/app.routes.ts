@@ -8,6 +8,7 @@ import { AlertasPage } from './features/alertas/alertas-page/alertas-page';
 import { NotificacionesPage } from './features/alertas/notificaciones-page/notificaciones-page';
 import { Dashboard } from './features/dashboard/dashboard';
 import { PerfilOrganismoView } from './features/organismos/perfil-organismo/perfil-organismo';
+import { RadarPage } from './features/radar/radar-page';
 
 export const routes: Routes = [
   // la portada: números generales del boletín (antes redirigía a la lista)
@@ -19,6 +20,7 @@ export const routes: Routes = [
   { path: 'proveedores/:documento', component: PerfilEmpresaView },
   // :inciso se enlaza al input "inciso" (withComponentInputBinding)
   { path: 'organismos/:inciso', component: PerfilOrganismoView },
+  { path: 'radar', component: RadarPage },
   { path: 'alertas', component: AlertasPage },
   { path: 'notificaciones', component: NotificacionesPage },
 ];

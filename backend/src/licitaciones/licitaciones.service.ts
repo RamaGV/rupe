@@ -224,6 +224,67 @@ export class LicitacionesService {
     };
   }
 
+  // RADAR DE PRECIOS: ¿a cuánto se le vendió ESTE artículo al Estado?
+  // Busca por texto en las descripciones de items (el usuario no conoce
+  // los códigos de artículo de ARCE) y devuelve el resumen POR MONEDA
+  // (regla 4) + las últimas muestras reales, navegables.
+  async radarPrecios(texto: string) {
+    // input escapado: "lápiz 2.5" busca el punto literal
+    const regex = new RegExp(texto.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i');
+
+    const [r] = await this.licitacionModel.aggregate([
+      // prefiltro barato ANTES del $unwind: solo docs con algún item
+      // que matchee — el unwind de 322k items se paga solo una vez acá
+      { $match: { items: { $elemMatch: { descripcion: regex, precioUnitario: { $gt: 0 } } } } },
+      { $unwind: '$items' },
+      { $match: { 'items.descripcion': regex, 'items.precioUnitario': { $gt: 0 } } },
+      {
+        $facet: {
+          resumenPorMoneda: [
+            {
+              $group: {
+                _id: { $ifNull: ['$items.moneda', 'sin moneda'] },
+                minimo: { $min: '$items.precioUnitario' },
+                promedio: { $avg: '$items.precioUnitario' },
+                maximo: { $max: '$items.precioUnitario' },
+                muestras: { $sum: 1 },
+              },
+            },
+            { $sort: { muestras: -1 } },
+            {
+              $project: {
+                _id: 0, moneda: '$_id', minimo: 1, maximo: 1, muestras: 1,
+                promedio: { $round: ['$promedio', 2] },
+              },
+            },
+          ],
+          muestras: [
+            { $sort: { 'adjudicacion.fechaAdjudicacion': -1 } },
+            { $limit: 50 },
+            {
+              $project: {
+                _id: 0,
+                licitacionId: '$id',
+                fecha: { $ifNull: ['$adjudicacion.fechaAdjudicacion', '$fechaPublicacion'] },
+                organismo: '$organismo.nombreInciso',
+                inciso: '$organismo.inciso',
+                proveedor: '$adjudicacion.proveedor.razonSocial',
+                numeroDocumento: '$adjudicacion.proveedor.numeroDocumento',
+                item: '$items.descripcion',
+                cantidad: '$items.cantidad',
+                unidad: '$items.unidad',
+                precioUnitario: '$items.precioUnitario',
+                moneda: '$items.moneda',
+              },
+            },
+          ],
+        },
+      },
+    ]);
+
+    return { texto, resumenPorMoneda: r.resumenPorMoneda, muestras: r.muestras };
+  }
+
   // El espejo del perfil de empresa: ¿cómo compra ESTE organismo?
   // Mismo patrón $facet tras un $match por inciso.
   async perfilOrganismo(inciso: number) {
