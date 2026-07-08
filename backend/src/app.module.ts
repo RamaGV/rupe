@@ -8,6 +8,7 @@ import { LicitacionesModule } from './licitaciones/licitaciones.module';
 import { ProveedoresModule } from './proveedores/proveedores.module';
 import { AlertasModule } from './alertas/alertas.module';
 import { EstadisticasModule } from './estadisticas/estadisticas.module';
+import { PushModule } from './push/push.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { EstadisticasModule } from './estadisticas/estadisticas.module';
     LicitacionesModule,
     AlertasModule,
     EstadisticasModule,
+    PushModule,
   ],
   controllers: [AppController],
   providers: [AppService],

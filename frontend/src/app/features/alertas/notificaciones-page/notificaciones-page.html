@@ -9,10 +9,24 @@
         }
       }
     </h1>
+    <div class="flex items-center gap-4 flex-wrap">
+    @if (push.soportado()) {
+      <button
+        (click)="push.activo() ? push.desactivar() : push.activar()"
+        [disabled]="push.ocupado()"
+        class="px-3 py-2 rounded-lg text-sm border disabled:opacity-40"
+        [class]="push.activo()
+          ? 'border-green-200 bg-green-100 text-green-700'
+          : 'border-gray-200 text-gray-600 hover:bg-gray-100'"
+      >
+        {{ push.activo() ? '🔔 Avisos del navegador: activos' : '🔕 Activar avisos del navegador' }}
+      </button>
+    }
     <label class="flex items-center gap-2 text-sm text-gray-600 cursor-pointer">
       <input type="checkbox" [checked]="soloNoLeidas()" (change)="toggleFiltro()" />
       Solo no leídas
     </label>
+    </div>
   </div>
 
   @if (error(); as err) {

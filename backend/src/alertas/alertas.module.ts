@@ -8,6 +8,7 @@ import { AlertasMatcherService } from './alertas-matcher.service';
 import { NotificacionesService } from './notificaciones.service';
 import { AlertasController } from './alertas.controller';
 import { NotificacionesController } from './notificaciones.controller';
+import { PushModule } from '../push/push.module';
 
 // Este módulo NO importa LicitacionesModule: el motor recibe los llamados
 // nuevos como argumento (se los pasa la ingesta). La dependencia va en una
@@ -18,6 +19,7 @@ import { NotificacionesController } from './notificaciones.controller';
       { name: Alerta.name, schema: AlertaSchema },
       { name: Notificacion.name, schema: NotificacionSchema },
     ]),
+    PushModule, // canal push del navegador sobre el mismo motor
   ],
   controllers: [AlertasController, NotificacionesController],
   providers: [AlertasService, AlertasMatcherService, NotificacionesService],

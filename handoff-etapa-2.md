@@ -33,7 +33,12 @@ del matcher existente.
 
 ## Ideas nuevas para la web (exploradas esta sesión, por valor)
 
-1. **Notificaciones push del navegador (PWA)** — LA alternativa al email
+1. [x] **Notificaciones push del navegador — HECHO (2026-07-08)**: módulo
+   push/ (claves VAPID autogeneradas y persistidas en Mongo, cero config),
+   canal enchufado al motor de alertas (mejor esfuerzo, suscripciones
+   muertas se autolimpian con el 410), sw.js mínimo (solo push, sin caché)
+   y botón en /notificaciones. OJO: requiere HTTPS o localhost (regla de
+   los navegadores). (era: LA alternativa al email
    que NO necesita dominio ni proveedor: el service worker recibe push
    del backend (web-push, gratis) y avisa aunque la pestaña esté cerrada.
    Convierte el boletín en app instalable en el teléfono. Candidata

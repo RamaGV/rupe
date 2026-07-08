@@ -14,6 +14,7 @@ import { Notificacion, NotificacionDocument } from './schemas/notificacion.schem
 import { matcheaCriterios } from './matcher/alerta-matcher';
 import type { LlamadoMatcheable } from './matcher/alerta-matcher';
 import { TipoAlerta } from '../shared/types';
+import { PushService } from '../push/push.service';
 
 // Lo que el motor necesita del llamado nuevo, además de lo matcheable:
 // identidad y datos para el snapshot de la notificación.
@@ -31,6 +32,7 @@ export class AlertasMatcherService {
     private readonly alertaModel: Model<AlertaDocument>,
     @InjectModel(Notificacion.name)
     private readonly notificacionModel: Model<NotificacionDocument>,
+    private readonly pushService: PushService,
   ) {}
 
   // Los dos motores comparten el núcleo: cambia QUÉ alertas cargan
@@ -94,6 +96,14 @@ export class AlertasMatcherService {
           if (err?.code !== 11000) throw err;
           insertadas = err.insertedDocs?.length ?? 0;
         });
+    }
+    // canal push: mejor esfuerzo — la notificación YA está persistida
+    if (insertadas > 0) {
+      const titulo = icono + ' ' + insertadas + (insertadas === 1 ? ' aviso nuevo' : ' avisos nuevos');
+      const cuerpo = notificaciones[0].descripcion || 'Ver el boletín';
+      this.pushService
+        .notificarTodos(titulo, cuerpo, '/notificaciones')
+        .catch((err) => this.logger.warn(`Canal push falló: ${err?.message}`));
     }
     return insertadas;
   }

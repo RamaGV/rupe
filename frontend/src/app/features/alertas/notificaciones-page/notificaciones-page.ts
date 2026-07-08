@@ -3,6 +3,7 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { SlicePipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { AlertasApi, BandejaNotificaciones } from '../alertas-api';
+import { Push } from '../../../core/push';
 
 import { Skeleton } from '../../../core/ui/skeleton';
 
@@ -14,6 +15,7 @@ import { Skeleton } from '../../../core/ui/skeleton';
 })
 export class NotificacionesPage implements OnInit {
   private alertasApi = inject(AlertasApi);
+  push = inject(Push);
 
   bandeja = signal<BandejaNotificaciones | null>(null);
   cargando = signal(true);
