@@ -1,6 +1,12 @@
 <!-- src/app/features/alertas/alertas-page/alertas-page.html -->
 <div class="p-4 sm:p-8">
-  <h1 class="text-2xl font-bold text-gray-800 mb-6">Mis alertas</h1>
+  <h1 class="text-2xl font-bold text-gray-800 mb-1">Mis alertas</h1>
+  <p class="text-sm text-gray-500 mb-6 max-w-2xl">
+    El boletín trabaja para vos: definí qué te interesa y el sistema revisa
+    las publicaciones oficiales <strong>cada 15 minutos</strong>. Cuando algo
+    matchea, aparece en la campanita 🔔 — y si está por cerrar, te lo
+    recuerda ⏰. <span class="text-gray-400">Próximamente: avisos por email.</span>
+  </p>
 
   @if (error(); as err) {
     <p class="text-red-600 bg-red-50 rounded-lg p-4 mb-4">{{ err }}</p>

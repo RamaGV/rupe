@@ -1,5 +1,5 @@
 <!-- src/app/app.html -->
-<div class="min-h-screen bg-gray-50">
+<div class="min-h-screen bg-gray-50 flex flex-col">
   <nav class="bg-white/90 backdrop-blur border-b border-gray-200 px-4 sm:px-8 py-3 flex items-center justify-between flex-wrap gap-y-2 sticky top-0 z-10">
     <div class="flex items-center gap-3 sm:gap-6 flex-wrap">
       <a routerLink="/" class="font-bold text-gray-800 hover:text-blue-600">
@@ -68,7 +68,22 @@
     </div>
   </nav>
 
-  <main>
+  <main class="flex-1">
     <router-outlet />
   </main>
+
+  <!-- Footer: siempre abajo (flex-col + mt-auto), firma del desarrollador -->
+  <footer class="mt-auto border-t border-gray-200 bg-white px-4 sm:px-8 py-4">
+    <div class="flex items-center justify-between flex-wrap gap-2 text-xs text-gray-500">
+      <p>
+        Boletín de Contrataciones del Estado · datos oficiales de
+        <a href="https://www.gub.uy/agencia-reguladora-compras-estatales" target="_blank" rel="noopener" class="hover:underline">ARCE</a>
+      </p>
+      <p class="flex items-center gap-3">
+        <span>Web desarrollada por <span class="font-medium text-gray-600">Ramiro Vazquez</span></span>
+        <a href="https://github.com/RamaGV" target="_blank" rel="noopener" class="text-blue-600 hover:underline">GitHub</a>
+        <a href="mailto:funes.gvr@gmail.com?subject=Boletín de Contrataciones" class="text-blue-600 hover:underline">Contacto</a>
+      </p>
+    </div>
+  </footer>
 </div>
