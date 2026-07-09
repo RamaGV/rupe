@@ -109,3 +109,7 @@ historico, series del radar, banderas, perfiles) se enriquecio solo.
    cívica, credibilidad, comunidad.
 
 Top-3 del autor+asistente: 1, 7 y 3.
+9. [x] **Informe de empresa descargable** (idea del autor 2026-07-08, HECHA):
+   /proveedores/:doc/informe — vista imprimible (PDF via window.print() +
+   @media print, cero dependencias) con resumen y historial completo (hasta
+   500), y CSV del historial para reporteros. Botones en el perfil.

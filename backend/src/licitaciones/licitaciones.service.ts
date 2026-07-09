@@ -233,6 +233,23 @@ export class LicitacionesService {
     };
   }
 
+  // Historial COMPLETO de adjudicaciones de un RUT (para el informe de
+  // empresa y su CSV) — el perfil muestra 10; esto trae hasta 500.
+  async adjudicacionesDeProveedor(numeroDocumento: string) {
+    return this.licitacionModel
+      .find(
+        { 'adjudicacion.proveedor.numeroDocumento': numeroDocumento },
+        {
+          _id: 0, id: 1, numeroCompra: 1, anio: 1, tipo: 1, descripcion: 1,
+          'organismo.nombreInciso': 1, 'adjudicacion.montoTotal': 1,
+          'adjudicacion.moneda': 1, 'adjudicacion.fechaAdjudicacion': 1,
+        },
+      )
+      .sort({ 'adjudicacion.fechaAdjudicacion': -1 })
+      .limit(500)
+      .lean();
+  }
+
   // RESUMEN SEMANAL: "la semana en compras públicas", autogenerado.
   // Es también el futuro cuerpo del boletín por email (5b): construirlo
   // acá es adelantar esa fase. Semana calendario lunes-domingo.

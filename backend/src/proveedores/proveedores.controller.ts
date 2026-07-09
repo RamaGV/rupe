@@ -1,5 +1,6 @@
 // src/proveedores/proveedores.controller.ts
-import { Controller, Get, Param, Query, NotFoundException } from '@nestjs/common';
+import { Controller, Get, Param, Query, NotFoundException, Res } from '@nestjs/common';
+import type { Response } from 'express';
 import { ProveedoresService } from './proveedores.service';
 
 @Controller('proveedores')
@@ -33,6 +34,19 @@ export class ProveedoresController {
       );
     }
     return perfil;
+  }
+
+  // historial completo para el informe de empresa
+  @Get(':documento/adjudicaciones')
+  adjudicaciones(@Param('documento') documento: string) {
+    return this.proveedoresService.adjudicaciones(documento);
+  }
+
+  @Get(':documento/adjudicaciones.csv')
+  async adjudicacionesCsv(@Param('documento') documento: string, @Res({ passthrough: true }) res: Response) {
+    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+    res.setHeader('Content-Disposition', 'attachment; filename="adjudicaciones-' + documento + '.csv"');
+    return this.proveedoresService.adjudicacionesCsv(documento);
   }
 
   @Get(':documento')

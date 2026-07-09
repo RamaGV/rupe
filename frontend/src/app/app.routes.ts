@@ -15,6 +15,7 @@ import { GuardadasPage } from './features/guardadas/guardadas-page';
 import { BanderasPage } from './features/banderas/banderas-page';
 import { SemanaPage } from './features/semana/semana-page';
 import { ComparadorPage } from './features/comparador/comparador-page';
+import { InformeEmpresa } from './features/proveedores/informe-empresa/informe-empresa';
 
 export const routes: Routes = [
   // la portada: números generales del boletín (antes redirigía a la lista)

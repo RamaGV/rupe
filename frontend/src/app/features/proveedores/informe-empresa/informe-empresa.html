@@ -1,0 +1,78 @@
+<!-- src/app/features/proveedores/informe-empresa/informe-empresa.html -->
+<div class="p-4 sm:p-8 max-w-4xl mx-auto">
+  <div class="no-print flex items-center justify-between gap-3 flex-wrap mb-6">
+    <a [routerLink]="['/proveedores', documento()]" class="text-sm text-blue-600 hover:underline">← Volver al perfil</a>
+    <div class="flex gap-2">
+      <button (click)="imprimir()" class="px-4 py-2 rounded-lg text-sm bg-blue-600 text-white hover:bg-blue-700">
+        📄 Descargar PDF
+      </button>
+      <a [href]="urlCsv()" class="px-4 py-2 rounded-lg text-sm border border-gray-200 text-gray-600 hover:bg-gray-100">
+        ⬇ CSV (reporteros)
+      </a>
+    </div>
+  </div>
+
+  @if (cargando()) {
+    <app-skeleton tipo="lineas" [filas]="10" />
+  } @else if (perfil(); as p) {
+    <!-- Encabezado del informe -->
+    <div class="border-b-2 border-gray-800 pb-4 mb-6">
+      <h1 class="text-2xl font-bold text-gray-800">{{ p.razonSocial }}</h1>
+      <p class="text-sm text-gray-500">
+        {{ p.tipoDocumento }} {{ p.numeroDocumento }} · {{ p.estado }} en RUPE
+        · Informe generado el {{ hoy | date: 'dd/MM/yyyy' }}
+      </p>
+      <p class="text-xs text-gray-400 mt-1">
+        Boletín de Contrataciones del Estado — datos oficiales de ARCE (2002–presente)
+      </p>
+    </div>
+
+    <!-- Resumen -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6 text-sm">
+      <div>
+        <p class="text-2xl font-bold text-gray-800">{{ p.totalLicitacionesGanadas | monto }}</p>
+        <p class="text-gray-500">licitaciones ganadas</p>
+      </div>
+      @for (m of p.montosPorMoneda; track m.moneda) {
+        <div>
+          <p class="text-lg font-bold text-gray-800">{{ m.total | monto: m.moneda }}</p>
+          <p class="text-gray-500">total adjudicado</p>
+        </div>
+      }
+    </div>
+
+    <!-- Historial -->
+    <h2 class="font-bold text-gray-800 mb-2">
+      Historial de adjudicaciones
+      <span class="text-xs font-normal text-gray-400">({{ filas().length }}{{ filas().length === 500 ? ' — recorte a las últimas 500' : '' }})</span>
+    </h2>
+    <table class="w-full text-xs text-left">
+      <thead class="text-gray-500 uppercase border-b border-gray-300">
+        <tr>
+          <th class="py-1 pr-2">Fecha</th>
+          <th class="py-1 pr-2">Nº compra</th>
+          <th class="py-1 pr-2">Descripción</th>
+          <th class="py-1 pr-2">Organismo</th>
+          <th class="py-1 text-right">Monto</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (f of filas(); track f.id) {
+          <tr class="border-b border-gray-100">
+            <td class="py-1 pr-2 whitespace-nowrap text-gray-500">
+              {{ (f.adjudicacion?.fechaAdjudicacion ?? '') | slice:0:10 }}
+            </td>
+            <td class="py-1 pr-2 whitespace-nowrap">{{ f.numeroCompra || f.id }}</td>
+            <td class="py-1 pr-2">{{ f.descripcion }}</td>
+            <td class="py-1 pr-2">{{ f.organismo.nombreInciso }}</td>
+            <td class="py-1 text-right whitespace-nowrap font-medium">
+              {{ f.adjudicacion?.montoTotal | monto: f.adjudicacion?.moneda }}
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  } @else {
+    <p class="text-gray-500">No hay datos para este documento.</p>
+  }
+</div>

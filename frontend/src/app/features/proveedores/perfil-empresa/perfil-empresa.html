@@ -1,6 +1,9 @@
 <!-- src/app/features/proveedores/perfil-empresa/perfil-empresa.html -->
 <div class="p-8 max-w-5xl mx-auto">
-  <a routerLink="/proveedores" class="text-sm text-blue-600 hover:underline">← Volver a proveedores</a>
+  <a [routerLink]="['/proveedores', documento(), 'informe']" class="float-right px-3 py-1.5 rounded-lg text-sm bg-blue-600 text-white hover:bg-blue-700">
+  📄 Informe descargable
+</a>
+<a routerLink="/proveedores" class="text-sm text-blue-600 hover:underline">← Volver a proveedores</a>
 
   @if (cargando()) {
     <app-skeleton tipo="lineas" [filas]="8" />

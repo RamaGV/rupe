@@ -35,6 +35,28 @@ export class ProveedoresService {
     return proveedor && aPublico(proveedor);
   }
 
+  // Para el informe de empresa: historial completo (hasta 500)
+  adjudicaciones(numeroDocumento: string) {
+    return this.licitacionesService.adjudicacionesDeProveedor(numeroDocumento);
+  }
+
+  // CSV del historial — dialecto reportero (; y BOM, como el export)
+  async adjudicacionesCsv(numeroDocumento: string): Promise<string> {
+    const filas = await this.adjudicaciones(numeroDocumento);
+    const celda = (v: unknown): string => {
+      if (v === undefined || v === null) return '';
+      const s = v instanceof Date ? v.toISOString() : String(v);
+      return '"' + s.replace(/"/g, '""') + '"';
+    };
+    const cabecera = ['licitacionId', 'numeroCompra', 'anio', 'tipo', 'descripcion', 'organismo', 'montoTotal', 'moneda', 'fechaAdjudicacion'].join(';');
+    const cuerpo = filas.map((l: any) => [
+      l.id, l.numeroCompra, l.anio, l.tipo, l.descripcion,
+      l.organismo?.nombreInciso, l.adjudicacion?.montoTotal,
+      l.adjudicacion?.moneda, l.adjudicacion?.fechaAdjudicacion,
+    ].map(celda).join(';'));
+    return '﻿' + [cabecera, ...cuerpo].join('\r\n');
+  }
+
   // El perfil de empresa: identidad desde RUPE (CSV) + historial de
   // adjudicaciones desde Mongo (dumps OCDS). Dos fuentes, una vista.
   async getPerfil(numeroDocumento: string): Promise<PerfilEmpresa | null> {
