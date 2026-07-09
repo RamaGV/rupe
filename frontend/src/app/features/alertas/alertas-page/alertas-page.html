@@ -47,9 +47,21 @@
           [value]="palabrasClave()"
           (input)="palabrasClave.set($any($event.target).value)"
         />
-        <p class="text-xs text-gray-400 mt-1">
-          Matchean por prefijo de palabra: "obra" encuentra "obras", no "cobranza"
-        </p>
+        @if (palabrasParseadas().length > 0) {
+          <div class="flex flex-wrap gap-1 mt-2">
+            @for (palabra of palabrasParseadas(); track palabra) {
+              <span class="px-2 py-0.5 rounded-full text-xs bg-blue-100 text-blue-700">{{ palabra }}</span>
+            }
+          </div>
+          <p class="text-xs text-gray-400 mt-1">
+            La alerta se activará con cualquiera de estos términos (busca por
+            comienzo de palabra: "obra" también encuentra "obras").
+          </p>
+        } @else {
+          <p class="text-xs text-gray-400 mt-1">
+            Separá los términos con comas — se muestran acá para revisarlos.
+          </p>
+        }
       </div>
       <div>
         <label class="block text-sm text-gray-600 mb-1">Organismo</label>

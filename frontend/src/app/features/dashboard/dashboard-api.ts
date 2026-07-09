@@ -57,7 +57,6 @@ export interface Estadisticas {
   totalProveedores: number;
   montosPorMoneda: MontoPorMoneda[];
   topOrganismos: OrganismoResumen[];
-  ultimasAdjudicaciones: AdjudicacionReciente[];
 }
 
 @Service()

@@ -55,7 +55,11 @@ export class Dashboard implements OnInit {
           type: 'doughnut',
           data: {
             labels: s.porTipo.map((t) => t.tipo),
-            datasets: [{ data: s.porTipo.map((t) => t.cantidad) }],
+            datasets: [{
+              data: s.porTipo.map((t) => t.cantidad),
+              // paleta explícita: el plugin de auto-colores no siempre corre
+              backgroundColor: ['#3b82f6', '#22c55e', '#f59e0b', '#8b5cf6', '#ec4899', '#14b8a6', '#f97316', '#64748b'],
+            }],
           },
           options: {
             responsive: true,

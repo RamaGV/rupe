@@ -138,6 +138,11 @@ export class AlertasPage implements OnInit {
     return codigos.map((c) => porCodigo.get(c) ?? `inciso ${c}`).join(', ');
   }
 
+  // para el checklist visual: lo tipeado, ya parseado en chips
+  palabrasParseadas(): string[] {
+    return this.aLista(this.palabrasClave());
+  }
+
   private aLista(texto: string): string[] {
     return texto
       .split(',')

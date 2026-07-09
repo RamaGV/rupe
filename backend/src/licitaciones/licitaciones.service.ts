@@ -199,23 +199,6 @@ export class LicitacionesService {
             { $limit: 24 },
             { $project: { _id: 0, mes: '$_id', llamados: 1, montoUYU: 1 } },
           ],
-          ultimasAdjudicaciones: [
-            { $match: { 'adjudicacion.fechaAdjudicacion': { $ne: null } } },
-            { $sort: { 'adjudicacion.fechaAdjudicacion': -1 } },
-            { $limit: 5 },
-            {
-              $project: {
-                _id: 0,
-                licitacionId: '$id',
-                descripcion: 1,
-                organismo: '$organismo.nombreInciso',
-                proveedor: '$adjudicacion.proveedor.razonSocial',
-                montoTotal: '$adjudicacion.montoTotal',
-                moneda: '$adjudicacion.moneda',
-                fechaAdjudicacion: '$adjudicacion.fechaAdjudicacion',
-              },
-            },
-          ],
         },
       },
     ]);
@@ -229,7 +212,6 @@ export class LicitacionesService {
       porTipo: r.porTipo,
       topProveedores: r.topProveedores,
       evolucionMensual: [...r.evolucionMensual].reverse(), // cronológico
-      ultimasAdjudicaciones: r.ultimasAdjudicaciones,
     };
   }
 

@@ -5,6 +5,7 @@ import { ProveedoresModule } from '../proveedores/proveedores.module';
 import { EstadisticasController } from './estadisticas.controller';
 import { OrganismoPerfilController } from './organismo-perfil.controller';
 import { BanderasController } from './banderas.controller';
+import { CacheCalculosService } from './cache-calculos.service';
 
 // Módulo chico a propósito: el dashboard CRUZA dominios (licitaciones +
 // proveedores) y no pertenece a ninguno de los dos — meterlo en uno
@@ -12,5 +13,6 @@ import { BanderasController } from './banderas.controller';
 @Module({
   imports: [LicitacionesModule, ProveedoresModule],
   controllers: [EstadisticasController, OrganismoPerfilController, BanderasController],
+  providers: [CacheCalculosService],
 })
 export class EstadisticasModule {}
