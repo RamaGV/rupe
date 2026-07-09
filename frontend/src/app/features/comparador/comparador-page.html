@@ -1,0 +1,53 @@
+<!-- src/app/features/comparador/comparador-page.html -->
+<div class="p-4 sm:p-8 max-w-5xl mx-auto">
+  <h1 class="text-2xl font-bold text-gray-800 mb-1">Comparador de proveedores</h1>
+  <p class="text-sm text-gray-500 mb-6">Dos empresas lado a lado: cuánto ganaron, de quién y desde cuándo.</p>
+
+  <div class="grid gap-6 md:grid-cols-2">
+    @for (lado of lados; track $index; let i = $index) {
+      <div class="bg-white rounded-xl shadow p-6">
+        <input
+          type="search"
+          [placeholder]="'Proveedor ' + (i + 1) + ' — razón social o RUT (mín. 3)'"
+          class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm mb-2 bg-white"
+          (input)="buscar(i, $any($event.target).value)"
+        />
+        @for (r of lado.resultados(); track r.numeroDocumento) {
+          <button
+            (click)="elegir(i, r.numeroDocumento)"
+            class="block w-full text-left text-sm px-3 py-1.5 rounded hover:bg-gray-100 text-blue-600"
+          >{{ r.razonSocial }} <span class="text-xs text-gray-400">{{ r.numeroDocumento }}</span></button>
+        }
+
+        @if (lado.cargando()) {
+          <p class="text-sm text-gray-400 mt-4">Cargando perfil...</p>
+        } @else if (lado.perfil(); as p) {
+          <div class="mt-4 space-y-3">
+            <a [routerLink]="['/proveedores', p.numeroDocumento]" class="font-bold text-gray-800 hover:underline block">
+              {{ p.razonSocial }}
+            </a>
+            <p class="text-3xl font-bold text-gray-800">{{ p.totalLicitacionesGanadas | monto }}</p>
+            <p class="text-xs text-gray-500 -mt-2">licitaciones ganadas</p>
+            <div>
+              <p class="text-xs text-gray-400 uppercase mb-1">Total por moneda</p>
+              @for (m of p.montosPorMoneda; track m.moneda) {
+                <p class="text-sm font-medium">{{ m.total | monto: m.moneda }}</p>
+              } @empty { <p class="text-sm text-gray-500">—</p> }
+            </div>
+            <div>
+              <p class="text-xs text-gray-400 uppercase mb-1">Le vende principalmente a</p>
+              @for (o of p.organismosMasFrecuentes; track o) {
+                <p class="text-sm text-gray-600 line-clamp-1">· {{ o }}</p>
+              }
+            </div>
+            @if (p.ultimaActividad) {
+              <p class="text-xs text-gray-400">Última adjudicación: {{ p.ultimaActividad.slice(0, 10) }}</p>
+            }
+          </div>
+        } @else {
+          <p class="text-sm text-gray-400 mt-4">Buscá y elegí una empresa para ver su columna.</p>
+        }
+      </div>
+    }
+  </div>
+</div>

@@ -92,7 +92,9 @@ historico, series del radar, banderas, perfiles) se enriquecio solo.
 2. [x] **Índice de concentración** — HECHO (2026-07-08): % del gasto UYU
    del top-3 en el perfil de organismo, con badge ámbar si supera el 60%.
 3. [x] **Serie temporal en el radar** — HECHO (2026-07-08).
-4. **Comparador de proveedores** — dos RUTs lado a lado.
+4. [x] **Comparador de proveedores** — HECHO (2026-07-08): /comparador,
+   dos columnas con busqueda + perfil (CERO backend nuevo: composicion
+   del endpoint de perfil existente). Acceso desde la lista de proveedores.
 
 **Para el usuario proveedor**
 5. [x] **Filtro por rango de monto** — HECHO (2026-07-08): montoMin/montoMax
