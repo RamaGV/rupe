@@ -50,6 +50,13 @@
         <h2 class="text-sm font-semibold text-gray-600 uppercase mb-4">
           A quién le compra <span class="normal-case text-gray-400">(UYU)</span>
         </h2>
+        @if (p.concentracionTop3 !== null) {
+          <p class="text-xs mb-3 rounded-lg px-3 py-2"
+             [class]="p.concentracionTop3 > 60 ? 'bg-amber-100 text-amber-700' : 'bg-gray-100 text-gray-600'">
+            El top 3 concentra el <strong>{{ p.concentracionTop3 }}%</strong> del gasto en UYU
+            @if (p.concentracionTop3 > 60) { — alta concentración }
+          </p>
+        }
         <ol class="space-y-3">
           @for (prov of p.topProveedores; track prov.numeroDocumento; let i = $index) {
             <li class="flex items-baseline justify-between gap-3 text-sm">

@@ -39,6 +39,8 @@ export interface FiltrosLicitaciones {
   tipo?: string;
   anio?: number;
   inciso?: number;
+  montoMin?: number;
+  montoMax?: number;
   orden?: 'recientes' | 'cierre' | 'monto';
 }
 

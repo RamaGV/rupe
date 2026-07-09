@@ -23,6 +23,7 @@ export interface PerfilOrganismo {
   vigentes: number;
   montosPorMoneda: MontoPorMoneda[];
   topProveedores: ProveedorTop[];
+  concentracionTop3: number | null; // % del gasto UYU del top-3
   porTipo: TipoResumen[];
   ultimasAdjudicaciones: AdjudicacionDelOrganismo[];
 }

@@ -66,6 +66,19 @@ export class BuscarLicitacionesDto {
   @IsInt()
   inciso?: number;
 
+  // rango de monto adjudicado EN UYU (el filtro fija la moneda: regla 4)
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(0)
+  montoMin?: number;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(0)
+  montoMax?: number;
+
   @IsOptional()
   @IsEnum(OrdenLicitaciones)
   orden: OrdenLicitaciones = OrdenLicitaciones.RECIENTES;

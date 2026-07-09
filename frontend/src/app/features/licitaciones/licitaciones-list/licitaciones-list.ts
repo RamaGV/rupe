@@ -93,8 +93,8 @@ export class LicitacionesList implements OnInit {
     this.busqueda$.next(valor);
   }
 
-  onFiltro(campo: 'estado' | 'tipo' | 'orden' | 'anio' | 'inciso', valor: string): void {
-    if (campo === 'anio' || campo === 'inciso') {
+  onFiltro(campo: 'estado' | 'tipo' | 'orden' | 'anio' | 'inciso' | 'montoMin' | 'montoMax', valor: string): void {
+    if (campo === 'anio' || campo === 'inciso' || campo === 'montoMin' || campo === 'montoMax') {
       this.filtros[campo] = valor ? parseInt(valor, 10) : undefined;
     } else {
       this.filtros[campo] = (valor || undefined) as never;

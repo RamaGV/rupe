@@ -66,6 +66,12 @@ del matcher existente.
    botones de ícono (tema, campanita, estrella, guardadas). Queda para
    una segunda pasada: aria en tablas y navegación por teclado del form.
 
+## HITO (2026-07-08): historico 2002-2025 COMPLETO en Mongo
+23 anios ingestados en una corrida, 0 errores en todos — los parsers con
+fixtures reales digirieron dos decadas de variaciones de formato.
+~600k llamados y ~1.3M de adjudicaciones. Todo el producto (dashboard
+historico, series del radar, banderas, perfiles) se enriquecio solo.
+
 ## Recordatorios operativos
 - Los archivos de datos van en backend/data/ (gitignoreado); links de
   descarga en ROADMAP.md.
@@ -83,13 +89,14 @@ del matcher existente.
    compras directas repetidas al mismo proveedor bajo el tope (fraccionamiento),
    adjudicaciones a empresas recién inscriptas en RUPE, proveedores que solo
    ganan en un organismo. LA feature citables-por-periodistas.
-2. **Índice de concentración** en perfil de organismo: % del gasto del top-3
-   de proveedores.
+2. [x] **Índice de concentración** — HECHO (2026-07-08): % del gasto UYU
+   del top-3 en el perfil de organismo, con badge ámbar si supera el 60%.
 3. [x] **Serie temporal en el radar** — HECHO (2026-07-08).
 4. **Comparador de proveedores** — dos RUTs lado a lado.
 
 **Para el usuario proveedor**
-5. **Filtro por rango de monto** en la lista (extender DTO).
+5. [x] **Filtro por rango de monto** — HECHO (2026-07-08): montoMin/montoMax
+   en UYU (el filtro fija la moneda — regla 4).
 6. **Calendario de cierres** — vista mensual de vencimientos.
 
 **Producto y difusión**

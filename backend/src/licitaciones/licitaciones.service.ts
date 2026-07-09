@@ -36,7 +36,7 @@ export class LicitacionesService {
   ) {}
 
   async buscar(filtros: BuscarLicitacionesDto) {
-    const { tipo, estado, anio, inciso, texto, page, limit, orden } = filtros;
+    const { tipo, estado, anio, inciso, texto, montoMin, montoMax, page, limit, orden } = filtros;
 
     // Armamos el filtro de Mongo incrementalmente - solo agregamos
     // condiciones para los parámetros que realmente vinieron en la query.
@@ -56,6 +56,15 @@ export class LicitacionesService {
     }
     if (anio) query.anio = anio;
     if (inciso) query['organismo.inciso'] = inciso;
+    // filtrar por monto implica UNA moneda (regla 4: comparar UYU con USD
+    // sería mezclar unidades) — el rango aplica sobre adjudicaciones en UYU
+    if (montoMin !== undefined || montoMax !== undefined) {
+      query['adjudicacion.moneda'] = 'Pesos Uruguayos';
+      query['adjudicacion.montoTotal'] = {
+        ...(montoMin !== undefined && { $gte: montoMin }),
+        ...(montoMax !== undefined && { $lte: montoMax }),
+      };
+    }
     if (texto) query.$text = { $search: texto };
 
     const skip = (page - 1) * limit;
@@ -575,6 +584,10 @@ export class LicitacionesService {
             { $limit: 5 },
             { $project: { _id: 0, tipo: '$_id', cantidad: 1 } },
           ],
+          totalUYU: [
+            { $match: { 'adjudicacion.moneda': 'Pesos Uruguayos', 'adjudicacion.montoTotal': { $gt: 0 } } },
+            { $group: { _id: null, total: { $sum: '$adjudicacion.montoTotal' } } },
+          ],
           ultimasAdjudicaciones: [
             { $match: { 'adjudicacion.fechaAdjudicacion': { $ne: null } } },
             { $sort: { 'adjudicacion.fechaAdjudicacion': -1 } },
@@ -604,6 +617,15 @@ export class LicitacionesService {
       montosPorMoneda: r.montosPorMoneda,
       topProveedores: r.topProveedores,
       porTipo: r.porTipo,
+      // índice de concentración: % del gasto UYU que se lleva el top-3.
+      // Un número simple que cuenta una historia grande (¿compra abierto
+      // o siempre a los mismos?). null si no hay base para calcularlo.
+      concentracionTop3: (() => {
+        const total = r.totalUYU[0]?.total ?? 0;
+        if (!total) return null;
+        const top3 = r.topProveedores.slice(0, 3).reduce((s: number, p: any) => s + p.totalUYU, 0);
+        return Math.round((top3 / total) * 100);
+      })(),
       ultimasAdjudicaciones: r.ultimasAdjudicaciones,
     };
   }

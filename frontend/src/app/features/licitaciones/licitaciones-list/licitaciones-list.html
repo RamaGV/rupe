@@ -59,6 +59,18 @@
         <option [value]="o.valor">{{ o.etiqueta }}</option>
       }
     </select>
+    <input
+      type="number" min="0" placeholder="Monto UYU mín"
+      class="border border-gray-300 rounded-lg px-3 py-2 text-sm w-36 bg-white"
+      title="Solo adjudicaciones en pesos uruguayos (filtrar por monto fija la moneda)"
+      (change)="onFiltro('montoMin', $any($event.target).value)"
+    />
+    <input
+      type="number" min="0" placeholder="Monto UYU máx"
+      class="border border-gray-300 rounded-lg px-3 py-2 text-sm w-36 bg-white"
+      title="Solo adjudicaciones en pesos uruguayos"
+      (change)="onFiltro('montoMax', $any($event.target).value)"
+    />
     @if (puedeCrearAlerta()) {
       <button
         (click)="crearAlertaDesdeFiltros()"
