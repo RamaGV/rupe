@@ -13,6 +13,7 @@ import { Metodologia } from './features/metodologia/metodologia';
 import { Glosario } from './features/glosario/glosario';
 import { GuardadasPage } from './features/guardadas/guardadas-page';
 import { BanderasPage } from './features/banderas/banderas-page';
+import { SemanaPage } from './features/semana/semana-page';
 
 export const routes: Routes = [
   // la portada: números generales del boletín (antes redirigía a la lista)

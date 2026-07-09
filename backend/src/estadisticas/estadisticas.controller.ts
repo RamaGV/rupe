@@ -13,6 +13,12 @@ export class EstadisticasController {
   // GET /estadisticas            → histórico completo
   // GET /estadisticas?anio=2026  → solo ese año ("este año" del dashboard)
   // Un solo param opcional: ParseIntPipe alcanza, un DTO sería ceremonia.
+  // "la semana en compras públicas" — también el futuro cuerpo del email
+  @Get('semana')
+  resumenSemanal() {
+    return this.licitacionesService.resumenSemanal();
+  }
+
   @Get()
   async resumen(@Query('anio', new ParseIntPipe({ optional: true })) anio?: number) {
     const [licitaciones, proveedores] = await Promise.all([

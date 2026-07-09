@@ -93,7 +93,8 @@ del matcher existente.
 6. **Calendario de cierres** — vista mensual de vencimientos.
 
 **Producto y difusión**
-7. **Resumen semanal autogenerado** — "Semana del X": lo nuevo/cerrado/
+7. [x] **Resumen semanal autogenerado** — HECHO (2026-07-08): /semana
+   (GET /estadisticas/semana), linkeado desde el dashboard. (era:** — "Semana del X": lo nuevo/cerrado/
    adjudicado. Se fabrica solo y ES el cuerpo del futuro boletín email (5b).
 8. **Datos re-publicados** (JSON/CSV mensual normalizado) — infraestructura
    cívica, credibilidad, comunidad.

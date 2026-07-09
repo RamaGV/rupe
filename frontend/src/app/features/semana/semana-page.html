@@ -1,0 +1,54 @@
+<!-- src/app/features/semana/semana-page.html -->
+<div class="p-4 sm:p-8 max-w-4xl mx-auto">
+  @if (cargando()) {
+    <app-skeleton tipo="lineas" [filas]="8" />
+  } @else if (error(); as err) {
+    <p class="text-red-600 bg-red-50 rounded-lg p-4">{{ err }}</p>
+  } @else if (resumen(); as r) {
+    <h1 class="text-2xl font-bold text-gray-800 mb-1">La semana en compras públicas</h1>
+    <p class="text-sm text-gray-500 mb-6">
+      Del {{ r.desde | slice:0:10 }} al {{ r.hasta | slice:0:10 }} —
+      <strong>{{ r.nuevos }}</strong> llamados nuevos.
+    </p>
+
+    <div class="grid gap-6 lg:grid-cols-2 mb-6">
+      <div class="bg-white rounded-xl shadow p-6">
+        <h2 class="text-sm font-semibold text-gray-600 uppercase mb-3">Quién publicó más esta semana</h2>
+        <ol class="space-y-2">
+          @for (o of r.topOrganismos; track o.nombre; let i = $index) {
+            <li class="flex justify-between text-sm">
+              <span class="text-gray-700">{{ i + 1 }}. {{ o.nombre }}</span>
+              <span class="text-gray-400">{{ o.cantidad }}</span>
+            </li>
+          } @empty { <p class="text-sm text-gray-500">Semana sin publicaciones aún.</p> }
+        </ol>
+      </div>
+
+      <div class="bg-white rounded-xl shadow p-6">
+        <h2 class="text-sm font-semibold text-gray-600 uppercase mb-3">⏰ Cierran en los próximos 7 días</h2>
+        <div class="space-y-2">
+          @for (c of r.cierranPronto; track c.id) {
+            <div class="text-sm">
+              <a [routerLink]="['/licitaciones', c.id]" class="text-blue-600 hover:underline line-clamp-1">{{ c.descripcion }}</a>
+              <p class="text-xs text-amber-600 font-medium">cierra {{ c.fechaRecepcionOfertas | fechaRelativa }} · {{ c.organismo }}</p>
+            </div>
+          } @empty { <p class="text-sm text-gray-500">Nada cierra esta semana.</p> }
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-white rounded-xl shadow p-6">
+      <h2 class="text-sm font-semibold text-gray-600 uppercase mb-3">Últimos llamados de la semana</h2>
+      <div class="space-y-2">
+        @for (n of r.ultimosNuevos; track n.id) {
+          <div class="flex items-baseline justify-between gap-3 text-sm border-t border-gray-100 pt-2 first:border-0 first:pt-0">
+            <a [routerLink]="['/licitaciones', n.id]" class="text-blue-600 hover:underline line-clamp-1">
+              {{ n.numeroCompra || n.id }} — {{ n.descripcion }}
+            </a>
+            <span class="text-xs text-gray-400 shrink-0">{{ n.organismo }}</span>
+          </div>
+        } @empty { <p class="text-sm text-gray-500">Todavía nada esta semana.</p> }
+      </div>
+    </div>
+  }
+</div>

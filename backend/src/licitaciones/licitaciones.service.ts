@@ -224,6 +224,61 @@ export class LicitacionesService {
     };
   }
 
+  // RESUMEN SEMANAL: "la semana en compras públicas", autogenerado.
+  // Es también el futuro cuerpo del boletín por email (5b): construirlo
+  // acá es adelantar esa fase. Semana calendario lunes-domingo.
+  async resumenSemanal() {
+    const ahora = new Date();
+    const dia = (ahora.getDay() + 6) % 7; // lunes=0
+    const desde = new Date(ahora.getFullYear(), ahora.getMonth(), ahora.getDate() - dia);
+    const en7dias = new Date(ahora.getTime() + 7 * 86_400_000);
+
+    const [r] = await this.licitacionModel.aggregate([
+      {
+        $facet: {
+          nuevos: [
+            { $match: { fechaPublicacion: { $gte: desde } } },
+            { $count: 'n' },
+          ],
+          nuevosTopOrganismos: [
+            { $match: { fechaPublicacion: { $gte: desde } } },
+            { $group: { _id: '$organismo.nombreInciso', cantidad: { $sum: 1 } } },
+            { $sort: { cantidad: -1 } },
+            { $limit: 5 },
+            { $project: { _id: 0, nombre: '$_id', cantidad: 1 } },
+          ],
+          ultimosNuevos: [
+            { $match: { fechaPublicacion: { $gte: desde } } },
+            { $sort: { fechaPublicacion: -1 } },
+            { $limit: 8 },
+            { $project: { _id: 0, id: 1, numeroCompra: 1, descripcion: 1, organismo: '$organismo.nombreInciso', tipo: 1 } },
+          ],
+          // lo que cierra en los próximos 7 días (vigente REAL)
+          cierranPronto: [
+            {
+              $match: {
+                estado: 'vigente',
+                fechaRecepcionOfertas: { $gte: ahora, $lte: en7dias },
+              },
+            },
+            { $sort: { fechaRecepcionOfertas: 1 } },
+            { $limit: 10 },
+            { $project: { _id: 0, id: 1, numeroCompra: 1, descripcion: 1, organismo: '$organismo.nombreInciso', fechaRecepcionOfertas: 1 } },
+          ],
+        },
+      },
+    ]);
+
+    return {
+      desde,
+      hasta: ahora,
+      nuevos: r.nuevos[0]?.n ?? 0,
+      topOrganismos: r.nuevosTopOrganismos,
+      ultimosNuevos: r.ultimosNuevos,
+      cierranPronto: r.cierranPronto,
+    };
+  }
+
   // BANDERAS ROJAS: señales estadísticas, NO acusaciones — patrones que
   // en compras públicas ameritan mirar dos veces. Cada detector es
   // honesto con los datos disponibles (y lo que NO se puede detectar,
