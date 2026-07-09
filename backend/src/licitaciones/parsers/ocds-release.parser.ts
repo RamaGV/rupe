@@ -131,7 +131,15 @@ export function mapearTenderALicitacion(release: OcdsRelease): LlamadoParseado {
     throw new Error(`Release ${release.id} sin tender.id`);
   }
 
-  const { numeroCompra, anio } = extraerNumeroYAnio(tender.title ?? '');
+  const { numeroCompra, anio: anioDelTitulo } = extraerNumeroYAnio(tender.title ?? '');
+  // El fallback de extraerNumeroYAnio es "año ACTUAL" — correcto para el
+  // RSS (solo trae vigentes del año corriente) pero VENENO en una ingesta
+  // histórica: un tender de 2008 sin número parseable quedaba como 2026.
+  // Sin número, el año sale de la fecha real del llamado.
+  const fechaPublicacion = tender.tenderPeriod?.startDate
+    ? new Date(tender.tenderPeriod.startDate)
+    : new Date(release.date);
+  const anio = numeroCompra ? anioDelTitulo : fechaPublicacion.getFullYear();
   const procuring = release.parties?.find((p) => p.roles.includes('procuringEntity'));
   const contactPoint = procuring?.contactPoint;
 
@@ -153,9 +161,7 @@ export function mapearTenderALicitacion(release: OcdsRelease): LlamadoParseado {
           telefono: limpiar(contactPoint.telephone),
         }
       : undefined,
-    fechaPublicacion: tender.tenderPeriod?.startDate
-      ? new Date(tender.tenderPeriod.startDate)
-      : new Date(release.date),
+    fechaPublicacion,
     fechaRecepcionOfertas: tender.tenderPeriod?.endDate
       ? new Date(tender.tenderPeriod.endDate)
       : undefined,

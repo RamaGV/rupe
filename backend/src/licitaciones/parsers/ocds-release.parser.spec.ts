@@ -197,3 +197,17 @@ describe('releases sin buyer', () => {
     expect(lic.organismo).toBeUndefined();
   });
 });
+
+// El bug de la ingesta histórica que cazó el autor: 292 llamados viejos
+// quedaron como anio=2026 por el fallback "año actual".
+describe('tender sin número de compra parseable', () => {
+  it('toma el año de la FECHA del llamado, no del reloj de la ingesta', () => {
+    const sinNumero = JSON.parse(JSON.stringify(tenderReal)) as OcdsRelease;
+    sinNumero.tender!.title = 'Llamado histórico sin número legible';
+    sinNumero.tender!.tenderPeriod = { startDate: '2008-05-10T12:00:00Z' };
+
+    const lic = mapearTenderALicitacion(sinNumero);
+    expect(lic.numeroCompra).toBe('');
+    expect(lic.anio).toBe(2008);
+  });
+});
