@@ -75,14 +75,17 @@ del matcher existente.
 ## Etapa 3 — ideas aprobadas por el autor (2026-07-08), por valor/esfuerzo
 
 **Análisis e investigación (el filón periodístico)**
-1. **Banderas rojas 🚩** — patrones sospechosos calculables con lo ya cargado:
+1. [x] **Banderas rojas 🚩** — HECHO (2026-07-08): /banderas-rojas con 3
+   detectores (fraccionamiento ≥5 CD/año mismo par organismo-proveedor,
+   mono-organismo ≥8 adj., directas >1M UYU), todo navegable y con el
+   disclaimer "señales, no acusaciones". Nota: "recién inscriptos" NO es
+   detectable (RUPE no trae fecha de alta). (era: patrones calculables:
    compras directas repetidas al mismo proveedor bajo el tope (fraccionamiento),
    adjudicaciones a empresas recién inscriptas en RUPE, proveedores que solo
    ganan en un organismo. LA feature citables-por-periodistas.
 2. **Índice de concentración** en perfil de organismo: % del gasto del top-3
    de proveedores.
-3. **Serie temporal en el radar** — graficar los precios unitarios en el
-   tiempo (los datos ya se juntan; falta la línea). ← EMPEZADA esta sesión.
+3. [x] **Serie temporal en el radar** — HECHO (2026-07-08).
 4. **Comparador de proveedores** — dos RUTs lado a lado.
 
 **Para el usuario proveedor**

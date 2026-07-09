@@ -17,6 +17,14 @@
 - [ ] Bajar el CSV RUPE del mes nuevo cuando salga → `backend/data/rupe/`
       y correr `npm run ingesta:proveedores`
 
+## Verificación de la corrida autónoma (2026-07-07/08)
+- [ ] Tour completo: dashboard (3 gráficos + selector de año + modo 🌙) →
+      organismo → proveedor → radar ("papel": resumen + LÍNEA de evolución +
+      muestras) → /banderas-rojas → detalle (similares) → ⭐ guardadas →
+      /metodologia y /glosario → botón "crear alerta con esta búsqueda" →
+      ⬇ CSV → activar avisos push (¡probar con pestaña cerrada!)
+- [ ] Títulos de pestaña por página y footer con tu firma en todas
+
 ## Presentación
 - [ ] Sacar capturas / grabar GIF del dashboard, filtros y alertas → README
 - [ ] Pensar el pitch de una línea del producto (para el README y LinkedIn)

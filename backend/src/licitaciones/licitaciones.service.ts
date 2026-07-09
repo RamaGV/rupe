@@ -224,6 +224,98 @@ export class LicitacionesService {
     };
   }
 
+  // BANDERAS ROJAS: señales estadísticas, NO acusaciones — patrones que
+  // en compras públicas ameritan mirar dos veces. Cada detector es
+  // honesto con los datos disponibles (y lo que NO se puede detectar,
+  // como "recién inscriptos", no se promete: RUPE no trae fecha de alta).
+  async banderasRojas() {
+    const [r] = await this.licitacionModel.aggregate([
+      {
+        $facet: {
+          // 1. Posible fraccionamiento: muchas compras directas del mismo
+          // organismo al mismo proveedor en el mismo año (en UYU para
+          // poder sumar — regla 4)
+          fraccionamiento: [
+            {
+              $match: {
+                tipo: 'Compra Directa',
+                'adjudicacion.moneda': 'Pesos Uruguayos',
+                'adjudicacion.montoTotal': { $gt: 0 },
+              },
+            },
+            {
+              $group: {
+                _id: {
+                  inciso: '$organismo.inciso',
+                  organismo: '$organismo.nombreInciso',
+                  documento: '$adjudicacion.proveedor.numeroDocumento',
+                  proveedor: '$adjudicacion.proveedor.razonSocial',
+                  anio: '$anio',
+                },
+                compras: { $sum: 1 },
+                totalUYU: { $sum: '$adjudicacion.montoTotal' },
+              },
+            },
+            { $match: { compras: { $gte: 5 }, '_id.documento': { $ne: null } } },
+            { $sort: { compras: -1 } },
+            { $limit: 10 },
+            {
+              $project: {
+                _id: 0, inciso: '$_id.inciso', organismo: '$_id.organismo',
+                documento: '$_id.documento', proveedor: '$_id.proveedor',
+                anio: '$_id.anio', compras: 1, totalUYU: 1,
+              },
+            },
+          ],
+          // 2. Proveedor mono-organismo: gana seguido pero SOLO ahí
+          monoOrganismo: [
+            { $match: { 'adjudicacion.proveedor.numeroDocumento': { $ne: null } } },
+            {
+              $group: {
+                _id: '$adjudicacion.proveedor.numeroDocumento',
+                proveedor: { $first: '$adjudicacion.proveedor.razonSocial' },
+                adjudicaciones: { $sum: 1 },
+                organismos: { $addToSet: '$organismo.nombreInciso' },
+              },
+            },
+            { $match: { adjudicaciones: { $gte: 8 }, $expr: { $eq: [{ $size: '$organismos' }, 1] } } },
+            { $sort: { adjudicaciones: -1 } },
+            { $limit: 10 },
+            {
+              $project: {
+                _id: 0, documento: '$_id', proveedor: 1, adjudicaciones: 1,
+                organismo: { $arrayElemAt: ['$organismos', 0] },
+              },
+            },
+          ],
+          // 3. Compras directas millonarias (UYU): el procedimiento menos
+          // competitivo con los montos más grandes
+          directasGrandes: [
+            {
+              $match: {
+                tipo: 'Compra Directa',
+                'adjudicacion.moneda': 'Pesos Uruguayos',
+                'adjudicacion.montoTotal': { $gt: 1_000_000 },
+              },
+            },
+            { $sort: { 'adjudicacion.montoTotal': -1 } },
+            { $limit: 10 },
+            {
+              $project: {
+                _id: 0, licitacionId: '$id', descripcion: 1, anio: 1,
+                organismo: '$organismo.nombreInciso',
+                proveedor: '$adjudicacion.proveedor.razonSocial',
+                documento: '$adjudicacion.proveedor.numeroDocumento',
+                montoUYU: '$adjudicacion.montoTotal',
+              },
+            },
+          ],
+        },
+      },
+    ]);
+    return r;
+  }
+
   // Licitaciones similares para el detalle: mismo organismo y tipo,
   // las más recientes primero. Heurística simple y honesta — suficiente
   // para "mirá qué más compra así este organismo" (comparar precios).
