@@ -8,14 +8,21 @@ paga y quién viene ganando.
 
 ## Qué hace
 
-- **Dashboard** con números del año: vigentes reales, montos adjudicados por
-  moneda (nunca sumados entre monedas), top organismos, últimas adjudicaciones.
-- **Búsqueda de licitaciones** con filtros (texto full-text, estado, tipo,
-  organismo por nombre, año) — ~35k llamados con items, precios y contactos.
-- **Perfil de empresa**: historial de adjudicaciones de cada proveedor
-  (~90k registrados en RUPE), cruzado por RUT.
-- **Alertas** 🔔 nuevos llamados / ⏰ vencimientos: criterios por palabras
-  clave, organismo y tipo; el cron detecta, matchea y notifica solo.
+**24 años de datos** (2002–2025: ~600k llamados, ~1.3M adjudicaciones):
+
+- **Dashboard interactivo** con selector de año y modo oscuro: actividad
+  mensual, distribución por tipo, rankings navegables de organismos y
+  proveedores — montos siempre POR MONEDA, nunca sumados entre monedas.
+- **Radar de precios**: ¿a cuánto se le vendió un artículo al Estado?
+  Mín/promedio/máx por moneda + evolución temporal + muestras reales.
+- **Banderas rojas** 🚩: señales estadísticas (fraccionamiento, proveedores
+  mono-organismo, compras directas millonarias) — puntos de partida para
+  investigar, no acusaciones.
+- **Perfiles cruzados**: empresa (con informe descargable en PDF y CSV) y
+  organismo (con índice de concentración del gasto), navegables en círculo.
+- **Alertas** 🔔⏰ con notificaciones push del navegador (pestaña cerrada),
+  resumen semanal autogenerado, comparador de proveedores, watchlist ⭐,
+  export CSV, glosario y metodología.
 
 ## Fuentes de datos (todas oficiales de ARCE)
 

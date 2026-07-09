@@ -1,10 +1,9 @@
 # Boletín de Contrataciones del Estado Uruguayo — Handoff
 
-> Documento de contexto para continuar el desarrollo en Claude Code.
-> Actualizado: 2026-07-04, al cierre de la sesión que completó las alertas
-> de VENCIMIENTO (cron de reloj) y arregló tres bugs destapados usando el
-> producto: timestamps en las respuestas, el "vigente eterno" de OCDS y
-> awards sin buyer que pisaban el organismo. Bloque 5: solo falta email.
+> DOCUMENTO HISTÓRICO — referencia de arquitectura y decisiones 1–14.
+> El estado VIVO del proyecto está en: PENDIENTES-AUTOR.md (empezá acá),
+> handoff-etapa-2.md (etapas 2 y 3) y ROADMAP.md (visión y fuentes).
+> Las secciones de "pendientes" de este archivo están superadas.
 
 ---
 
