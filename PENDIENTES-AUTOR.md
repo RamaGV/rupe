@@ -1,30 +1,57 @@
-# Pendientes del autor (cosas que solo vos podés hacer)
+# EMPEZÁ ACÁ — Pendientes del autor
 
-## Verificaciones pendientes de la última sesión
-- [ ] GitHub → Actions: últimos 3 runs en verde (56c8cdf, 2bfc052, 722504b)
-- [ ] `docker compose up --build` (re-verificación del build context raíz)
-- [ ] `cd backend && npm run start:dev` + vuelta por la web (flujo de siempre)
+> Actualizado 2026-07-09. Todo lo de abajo requiere TUS ojos, tus cuentas
+> o tus decisiones. El estado técnico completo está en handoff-etapa-2.md;
+> la visión en ROADMAP.md.
 
-## Cuentas y compras (desbloquean fases del ROADMAP)
-- [ ] Cuenta en MongoDB Atlas (tier M0 gratis) → URI al `.env` [Fase A]
-- [ ] Elegir NOMBRE del producto + comprar dominio (~10 USD/año) [Fase A]
-- [ ] Hosting: cuenta en Render/Railway/Fly + Vercel/Cloudflare [Fase A]
-- [ ] API key de Resend (cuando llegue el email 5b) [Fase C]
+## 0. Dato clave antes de arrancar
+La base YA tiene el histórico completo **2002–2025**: ~600k llamados y
+~1.3M de adjudicaciones (23 años ingestados el 2026-07-08, 0 errores).
+No tenés que ingestar nada — solo levantar y mirar.
 
-## Datos (sin sesión, cuando quieras)
-- [ ] Bajar ZIPs OCDS 2024, 2023... → `backend/data/ocds/ocds-<año>.zip`
-      y correr `npm run ingesta:ocds -- <año>` (links en ROADMAP.md)
-- [ ] Bajar el CSV RUPE del mes nuevo cuando salga → `backend/data/rupe/`
-      y correr `npm run ingesta:proveedores`
+## 1. La gran verificación (una sesión tuya, ~30 min)
+Levantá backend (`cd backend && npm run start:dev`) y frontend (`ng serve`):
 
-## Verificación de la corrida autónoma (2026-07-07/08)
-- [ ] Tour completo: dashboard (3 gráficos + selector de año + modo 🌙) →
-      organismo → proveedor → radar ("papel": resumen + LÍNEA de evolución +
-      muestras) → /banderas-rojas → detalle (similares) → ⭐ guardadas →
-      /metodologia y /glosario → botón "crear alerta con esta búsqueda" →
-      ⬇ CSV → activar avisos push (¡probar con pestaña cerrada!)
-- [ ] Títulos de pestaña por página y footer con tu firma en todas
+- [ ] **Dashboard** en "Histórico completo": 24 años de datos, 3 gráficos
+      (actividad mensual, dona por tipo, ranking de proveedores navegable)
+- [ ] **Modo oscuro** 🌙 (toggle en navbar) — mirá los charts redibujarse
+- [ ] Círculo completo: organismo del top → su perfil (con el **índice de
+      concentración** del top-3) → proveedor → su perfil → **📄 Informe
+      descargable** (probá Ctrl+P → Guardar como PDF) y **⬇ CSV**
+- [ ] **/radar**: buscá "papel" — resumen por moneda + LÍNEA de evolución
+      del precio (¡ahora con 24 años!) + muestras navegables
+- [ ] **/banderas-rojas**: fraccionamiento, mono-organismo, directas grandes
+- [ ] **/semana**: el resumen semanal autogenerado
+- [ ] **/comparador**: dos empresas de un mismo rubro, lado a lado
+- [ ] Lista de licitaciones: filtro por organismo + **rango de monto UYU** +
+      botón **"🔔 Crear alerta con esta búsqueda"** + **⬇ CSV**
+- [ ] Detalle: similares del organismo, "cierra en N días", chip apertura
+      electrónica; **⭐ guardadas** (estrella en la lista → /guardadas)
+- [ ] **Push del navegador**: /notificaciones → "Activar avisos" → borrá una
+      licitación vigente de Mongo → GET /licitaciones/debug/ingestar-ahora →
+      la notificación llega CON LA PESTAÑA CERRADA
+- [ ] /metodologia y /glosario (footer) + títulos de pestaña + tu firma al pie
+- [ ] `docker compose up --build` (pendiente desde el refactor shared)
+- [ ] GitHub → Actions: todo verde
+- [ ] Swagger: http://localhost:3000/api/docs
 
-## Presentación
-- [ ] Sacar capturas / grabar GIF del dashboard, filtros y alertas → README
-- [ ] Pensar el pitch de una línea del producto (para el README y LinkedIn)
+## 2. Cuentas y compras (desbloquean el deploy — Fase A)
+- [ ] MongoDB Atlas (M0 gratis) → URI al `.env`
+- [ ] Nombre del producto + dominio (~10 USD/año) — también desbloquea
+      el email (5b) y el OG serio
+- [ ] Hosting: Render/Railway/Fly (backend) + Vercel/Cloudflare (frontend)
+- [ ] API key de Resend (recién para el boletín email, post-deploy)
+
+## 3. Presentación (tu carta de venta)
+- [ ] Capturas / GIF del dashboard, radar y banderas → README
+- [ ] Pitch de una línea (README + LinkedIn)
+
+## 4. Datos — mantenimiento eventual
+- [ ] CSV de RUPE del mes nuevo cuando salga → `backend/data/rupe/` +
+      `npm run ingesta:proveedores`
+- [ ] Dump OCDS 2026 cuando ARCE lo publique (enero 2027) → mismo flujo
+
+## Para la próxima sesión conmigo (elegí una)
+- **Deploy** (si ya hiciste el punto 2) — el proyecto sale a internet
+- **SSR/prerender** — SEO y OG por página (sesión dedicada)
+- **Mapa de Uruguay por intendencias** — el visual que falta
