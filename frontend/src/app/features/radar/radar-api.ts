@@ -26,7 +26,14 @@ export interface MuestraPrecio {
   moneda?: string;
 }
 
+export interface PuntoSerie {
+  mes: string;
+  promedio: number;
+  muestras: number;
+}
+
 export interface RadarPrecios {
+  serieMensualUYU: PuntoSerie[];
   texto: string;
   resumenPorMoneda: ResumenPrecio[];
   muestras: MuestraPrecio[];

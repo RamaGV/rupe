@@ -313,6 +313,25 @@ export class LicitacionesService {
               },
             },
           ],
+          // serie temporal para el gráfico: promedio mensual del precio
+          // unitario EN UYU (una moneda etiquetada — regla 4)
+          serieMensualUYU: [
+            { $match: { 'items.moneda': 'Pesos Uruguayos' } },
+            {
+              $group: {
+                _id: {
+                  $dateToString: {
+                    format: '%Y-%m',
+                    date: { $ifNull: ['$adjudicacion.fechaAdjudicacion', '$fechaPublicacion'] },
+                  },
+                },
+                promedio: { $avg: '$items.precioUnitario' },
+                muestras: { $sum: 1 },
+              },
+            },
+            { $sort: { _id: 1 } },
+            { $project: { _id: 0, mes: '$_id', muestras: 1, promedio: { $round: ['$promedio', 2] } } },
+          ],
           muestras: [
             { $sort: { 'adjudicacion.fechaAdjudicacion': -1 } },
             { $limit: 50 },
@@ -337,7 +356,7 @@ export class LicitacionesService {
       },
     ]);
 
-    return { texto, resumenPorMoneda: r.resumenPorMoneda, muestras: r.muestras };
+    return { texto, resumenPorMoneda: r.resumenPorMoneda, serieMensualUYU: r.serieMensualUYU, muestras: r.muestras };
   }
 
   // El espejo del perfil de empresa: ¿cómo compra ESTE organismo?

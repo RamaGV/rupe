@@ -1,5 +1,8 @@
 // src/app/features/radar/radar-page.ts
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, signal, effect, viewChild, ElementRef } from '@angular/core';
+import { Chart, registerables } from 'chart.js';
+
+Chart.register(...registerables);
 import { SlicePipe } from '@angular/common';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
@@ -23,8 +26,31 @@ export class RadarPage {
   buscado = signal(false); // distingue "todavía no buscaste" de "sin resultados"
 
   private busqueda$ = new Subject<string>();
+  private canvasSerie = viewChild<ElementRef<HTMLCanvasElement>>('serie');
+  private grafico?: Chart;
 
   constructor() {
+    // la línea de precios se redibuja cuando llega un resultado nuevo
+    effect(() => {
+      const r = this.resultado();
+      const canvas = this.canvasSerie()?.nativeElement;
+      if (!r?.serieMensualUYU || r.serieMensualUYU.length < 2 || !canvas) return;
+      this.grafico?.destroy();
+      this.grafico = new Chart(canvas, {
+        type: 'line',
+        data: {
+          labels: r.serieMensualUYU.map((p) => p.mes),
+          datasets: [{
+            label: 'Precio unitario promedio (UYU)',
+            data: r.serieMensualUYU.map((p) => p.promedio),
+            borderColor: 'rgb(22, 163, 74)',
+            tension: 0.3,
+          }],
+        },
+        options: { responsive: true, maintainAspectRatio: false },
+      });
+    });
+
     this.busqueda$
       .pipe(
         debounceTime(400),

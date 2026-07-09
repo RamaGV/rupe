@@ -43,6 +43,15 @@
       }
     </div>
 
+    <!-- Evolución del precio en el tiempo -->
+    @if (r.serieMensualUYU.length > 1) {
+      <div class="bg-white rounded-xl shadow p-6 mb-6">
+        <h2 class="text-sm font-semibold text-gray-600 uppercase mb-4">Evolución del precio (UYU)</h2>
+        <div class="h-64"><canvas #serie></canvas></div>
+        <p class="text-xs text-gray-400 mt-2">Promedio mensual del precio unitario en las adjudicaciones que matchean.</p>
+      </div>
+    }
+
     <!-- Muestras -->
     @if (r.muestras.length > 0) {
       <div class="bg-white rounded-xl shadow overflow-hidden">
