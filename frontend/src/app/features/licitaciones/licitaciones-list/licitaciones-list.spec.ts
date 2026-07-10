@@ -52,7 +52,7 @@ describe('LicitacionesList', () => {
 
   function flushArranque() {
     http
-      .expectOne(`${environment.apiUrl}/licitaciones?orden=recientes&page=1`)
+      .expectOne(`${environment.apiUrl}/licitaciones?orden=recientes&estado=vigente&page=1`)
       .flush(PAGINA);
     http.expectOne(`${environment.apiUrl}/organismos`).flush([
       { inciso: 83, nombre: 'Intendencia de Colonia' },
@@ -77,7 +77,7 @@ describe('LicitacionesList', () => {
 
     fixture.componentInstance.onFiltro('inciso', '83');
     http
-      .expectOne(`${environment.apiUrl}/licitaciones?orden=recientes&inciso=83&page=1`)
+      .expectOne(`${environment.apiUrl}/licitaciones?orden=recientes&estado=vigente&inciso=83&page=1`)
       .flush(PAGINA);
     await fixture.whenStable();
 
@@ -87,7 +87,7 @@ describe('LicitacionesList', () => {
   it('si la codiguera falla, la lista vive igual (solo se pierde el selector)', async () => {
     fixture.detectChanges();
     http
-      .expectOne(`${environment.apiUrl}/licitaciones?orden=recientes&page=1`)
+      .expectOne(`${environment.apiUrl}/licitaciones?orden=recientes&estado=vigente&page=1`)
       .flush(PAGINA);
     http
       .expectOne(`${environment.apiUrl}/organismos`)

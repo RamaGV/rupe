@@ -98,7 +98,8 @@ export class Licitacion {
   @Prop({ required: true })
   numeroCompra: string;
 
-  @Prop({ required: true })
+  // indexado: con 1.6M de docs el filtro por año era un collscan
+  @Prop({ required: true, index: true })
   anio: number;
 
   @Prop({ type: String, enum: TipoContratacion, required: true, index: true })

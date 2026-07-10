@@ -48,7 +48,11 @@ export class LicitacionesList implements OnInit {
 
   // Filtros vigentes. Campos planos (no signals): no los muestra la UI,
   // solo alimentan la próxima query — la UI reacciona a `pagina`.
-  private filtros: FiltrosLicitaciones = { orden: 'recientes' };
+  // DEFAULT: vigentes — lo accionable. El histórico completo (1.6M docs
+  // de 24 años) es opt-in con "Todos los estados": la vista "todo
+  // mezclado" era lenta de contar y no le servía a nadie como portada.
+  private filtros: FiltrosLicitaciones = { orden: 'recientes', estado: 'vigente' };
+  estadoActual = signal('vigente');
 
   // Texto con debounce (mismo patrón que proveedores); los <select>
   // disparan directo porque un cambio de select ya es una acción única.
@@ -94,6 +98,7 @@ export class LicitacionesList implements OnInit {
   }
 
   onFiltro(campo: 'estado' | 'tipo' | 'orden' | 'anio' | 'inciso' | 'montoMin' | 'montoMax', valor: string): void {
+    if (campo === 'estado') this.estadoActual.set(valor);
     if (campo === 'anio' || campo === 'inciso' || campo === 'montoMin' || campo === 'montoMax') {
       this.filtros[campo] = valor ? parseInt(valor, 10) : undefined;
     } else {

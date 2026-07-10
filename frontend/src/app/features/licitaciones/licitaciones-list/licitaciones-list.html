@@ -4,6 +4,11 @@
     Licitaciones
     @if (pagina(); as p) {
       <span class="text-sm font-normal text-gray-500">({{ p.total }} encontradas)</span>
+      @if (estadoActual() === 'vigente') {
+        <span class="text-xs font-normal text-gray-400 block sm:inline sm:ml-2">
+          mostrando vigentes — para el histórico completo elegí "Todos los estados"
+        </span>
+      }
     }
   </h1>
 
@@ -17,9 +22,10 @@
     />
     <select
       class="border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white"
+      [value]="estadoActual()"
       (change)="onFiltro('estado', $any($event.target).value)"
     >
-      <option value="">Todos los estados</option>
+      <option value="">Todos los estados (histórico 2002–hoy)</option>
       @for (e of estados; track e) {
         <option [value]="e">{{ e }}</option>
       }
